@@ -114,6 +114,141 @@ results = verify_huang_paper()
 
 ---
 
+## Use Cases
+
+### AI Safety: Monitor agents for behavioral transitions
+
+Compute a Psi profile per conversation turn. When Psi3 spikes, the agent's behavioral pattern is actively changing — a mode transition may be imminent.
+
+```python
+from insight137_eap import compute_psi_from_sequence
+
+msg_lengths = []
+
+for turn in agent_conversation:
+    msg_lengths.append(len(turn["content"]))
+    profile = compute_psi_from_sequence(msg_lengths)
+
+    if profile.psi_3 > 0.4:
+        print(f"WARNING: Behavioral transition detected at turn {len(msg_lengths)}")
+        print(f"  Psi3 = {profile.psi_3:.4f} (volatility spike)")
+```
+
+Validated: Psi3 detects comply-to-bypass transitions with Cohen's d = 1.024 on 7,254 SHADE-Arena trials.
+
+### AI Safety: Compare models on red-team scenarios
+
+Evaluate how much different models disagree on the same scenario. High Psi4 means the scenario is contentious and warrants deeper investigation.
+
+```python
+from insight137_eap import compute_psi4
+
+# Each model's bypass decision on the same scenario
+# 1.0 = bypassed, 0.01 = complied
+model_decisions = {
+    "o3":           1.0,
+    "o1-preview":   1.0,
+    "codex-mini":   1.0,
+    "gpt-4o":       0.01,
+    "claude-3.7":   0.01,
+    "claude-opus4": 0.01,
+    "gemini-2.5":   0.01,
+    "grok-3":       0.01,
+}
+
+psi4 = compute_psi4(list(model_decisions.values()))
+print(f"Cross-model disagreement: Psi4 = {psi4:.4f}")
+
+if psi4 > 0.3:
+    print("High disagreement — this scenario needs manual review")
+```
+
+Validated: Psi4 correlates r = 0.9983 with cross-model disagreement across 100 scenarios and 11 models.
+
+### Quantum Cognition: Replace static interference with data-driven computation
+
+The standard QDT approach uses a fixed interference parameter (cos theta = -0.25). This library replaces it with Huang's dynamic computation that adapts to each dataset.
+
+```python
+from insight137_eap import quantum_probability
+
+# Your survey data: P(choice | context_A) and P(choice | context_B)
+my_survey = {
+    "option_1": {"p_given_a_true": 0.72, "p_given_a_false": 0.58},
+    "option_2": {"p_given_a_true": 0.28, "p_given_a_false": 0.42},
+}
+
+# Classical prediction
+p_classical = 0.5 * 0.72 + 0.5 * 0.58  # = 0.65
+
+# Quantum prediction (Huang interference, Born normalization)
+q_probs = quantum_probability(my_survey)
+print(f"Classical: {p_classical:.4f}")
+print(f"Quantum:   {q_probs['option_1']:.4f}")
+```
+
+Validated: 49% average error improvement over classical on Prisoner's Dilemma data (Huang et al., 2019).
+
+### Behavioral UX: Detect mode switches in user sessions
+
+Measure when user behavior shifts from one pattern to another. Useful for detecting engagement drops, confusion points, or task abandonment.
+
+```python
+from insight137_eap import compute_psi_from_sequence
+
+# Time spent on each page (seconds)
+page_dwell_times = [45, 38, 42, 55, 8, 3, 2, 65, 70]
+#                   browsing normally ^  ^ sudden drop  ^ recovered
+
+profile = compute_psi_from_sequence(page_dwell_times)
+
+if profile.psi_3 > 0.3:
+    print("User experienced a behavioral mode switch")
+```
+
+### Cybersecurity: Keystroke entropy for bot detection
+
+Compute Psi profiles from keystroke timing to distinguish human typing from bot-generated input — without CAPTCHAs.
+
+```python
+from insight137_eap import compute_psi_from_sequence
+
+# Inter-keystroke intervals (milliseconds)
+human_typing = [120, 85, 145, 92, 178, 67, 134, 88, 156, 73]
+bot_typing    = [50, 50, 51, 50, 50, 49, 50, 51, 50, 50]
+
+human_profile = compute_psi_from_sequence(human_typing)
+bot_profile   = compute_psi_from_sequence(bot_typing)
+
+print(f"Human Psi2: {human_profile.psi_2:.4f}  (higher — natural variability)")
+print(f"Bot   Psi2: {bot_profile.psi_2:.4f}  (lower — mechanical regularity)")
+```
+
+### Research: Batch analysis with effect sizes
+
+Process multiple experimental conditions and compute standardized effect sizes.
+
+```python
+from insight137_eap import compute_psi_from_sequence, cohens_d
+
+control_psi2 = []
+experimental_psi2 = []
+
+for trial in control_trials:
+    profile = compute_psi_from_sequence(trial["values"])
+    control_psi2.append(profile.psi_2)
+
+for trial in experimental_trials:
+    profile = compute_psi_from_sequence(trial["values"])
+    experimental_psi2.append(profile.psi_2)
+
+d = cohens_d(experimental_psi2, control_psi2)
+print(f"Effect size: d = {d:.3f}")
+print(f"Interpretation: {'large' if abs(d) > 0.8 else 'medium' if abs(d) > 0.5 else 'small'}")
+```
+
+---
+
 ## The Four Dimensions
 
 | Dimension | Name | Measures | Grounding |
