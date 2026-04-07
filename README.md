@@ -1,0 +1,284 @@
+# Insight137 EAP — Entropy Attunement Protocol
+
+**Version 2.0.0** | Enterprise-grade 4-dimensional entropy profiling
+
+Formally grounded in peer-reviewed research. Validated across 128,675 samples.
+
+---
+
+## Installation
+
+No pip package yet. Copy `insight137_eap.py` to your project and import:
+
+```python
+from insight137_eap import (
+    compute_psi_from_sequence,
+    compute_psi_from_conditionals,
+    PsiProfile,
+)
+```
+
+**Requires:** Python 3.9+, NumPy
+
+---
+
+## Quickstart
+
+### 1. Analyze a behavioral sequence (AI transcripts, keystroke timings)
+
+```python
+from insight137_eap import compute_psi_from_sequence
+
+# Message lengths from an AI agent conversation
+message_lengths = [150, 200, 180, 350, 120, 400, 90, 250]
+
+profile = compute_psi_from_sequence(message_lengths)
+
+print(f"Psi1 (informational): {profile.psi_1:.4f}")
+print(f"Psi2 (behavioral):    {profile.psi_2:.4f}")
+print(f"Psi3 (adaptive):      {profile.psi_3:.4f}")
+print(f"Psi4 (relational):    {profile.psi_4:.4f}")
+```
+
+**Output:**
+```
+Psi1 (informational): 2.8444
+Psi2 (behavioral):    0.3540
+Psi3 (adaptive):      0.4096
+Psi4 (relational):    0.0000
+```
+
+### 2. Analyze survey order effects (quantum cognition)
+
+```python
+from insight137_eap import compute_psi_from_conditionals
+
+# Prisoner's Dilemma: P(Defect | opponent defected) and P(Defect | opponent cooperated)
+conditionals = {
+    "defect": {"p_given_a_true": 0.87, "p_given_a_false": 0.74},
+    "cooperate": {"p_given_a_true": 0.13, "p_given_a_false": 0.26},
+}
+
+profile = compute_psi_from_conditionals(conditionals)
+
+print(f"Psi1: {profile.psi_1:.4f}")
+print(f"Psi2: {profile.psi_2:.4f}")
+print(f"Belief Degree (Db): {profile.belief_degree:.4f}")
+```
+
+**Output:**
+```
+Psi1: 0.9957
+Psi2: 0.9421
+Belief Degree (Db): -0.9421
+```
+
+### 3. Measure cross-model decision diversity (Psi4)
+
+```python
+from insight137_eap import compute_psi4
+
+# 5 AI models: 3 bypassed shutdown, 2 complied
+# Use 1.0 for bypass, 0.01 for comply
+agent_decisions = [1.0, 1.0, 1.0, 0.01, 0.01]
+
+psi4 = compute_psi4(agent_decisions)
+print(f"Psi4 (relational): {psi4:.4f}")
+# Output: Psi4 (relational): 0.4971
+```
+
+### 4. Get quantum-corrected probabilities
+
+```python
+from insight137_eap import quantum_probability
+
+conditionals = {
+    "defect": {"p_given_a_true": 0.87, "p_given_a_false": 0.74},
+    "cooperate": {"p_given_a_true": 0.13, "p_given_a_false": 0.26},
+}
+
+probs = quantum_probability(conditionals)
+print(f"P(Defect):    {probs['defect']:.4f}")    # 0.6925
+print(f"P(Cooperate): {probs['cooperate']:.4f}")  # 0.3075
+```
+
+### 5. Verify implementation integrity
+
+```python
+from insight137_eap import verify_huang_paper
+
+results = verify_huang_paper()
+# Returns dict: {'belief_degree_match': True, 'probability_match': True, ...}
+# Raises VerificationError if any critical check fails
+```
+
+---
+
+## The Four Dimensions
+
+| Dimension | Name | Measures | Grounding |
+|-----------|------|----------|-----------|
+| Psi1 | Informational Entropy | Uncertainty in the probability distribution | Deng (2016), Shannon (1948) |
+| Psi2 | Behavioral Entropy | Magnitude of quantum-like interference | Huang et al. (2019) |
+| Psi3 | Adaptive Entropy | Volatility of interference over time | Novel (this work) |
+| Psi4 | Relational Entropy | Decision diversity across multiple agents | Meghdadi et al. (2022) |
+
+**Interpretation guide:**
+- **High Psi1** = uncertain distribution (many equally likely outcomes)
+- **High Psi2** = strong quantum interference (behavior deviates from classical prediction)
+- **High Psi3** = volatile interference (behavioral pattern is actively changing)
+- **High Psi4** = diverse agent decisions (models disagree on the scenario)
+
+---
+
+## API Reference
+
+### Entry Points
+
+#### `compute_psi_from_sequence(values, window_size=3, agent_decisions=None) -> PsiProfile`
+
+Primary entry point for behavioral sequence data. Computes all four
+Psi dimensions from message lengths, keystroke timings, or action sequences.
+
+**Parameters:**
+- `values` — Sequence of positive floats (message lengths, timings, etc.)
+- `window_size` — Sliding window for interference computation (default: 3)
+- `agent_decisions` — Optional list of agent probabilities for Psi4
+
+**Returns:** Frozen `PsiProfile` dataclass.
+
+#### `compute_psi_from_conditionals(conditionals, p_a_true=0.5, p_a_false=0.5) -> PsiProfile`
+
+Entry point for QLBN conditional probability data (survey order effects, Prisoner's Dilemma).
+
+**Parameters:**
+- `conditionals` — Dict mapping outcome names to `{"p_given_a_true": float, "p_given_a_false": float}`
+- `p_a_true`, `p_a_false` — Prior probabilities (must sum to ~1.0)
+
+**Returns:** `PsiProfile` with Psi1, Psi2, belief_degree. Psi3/Psi4 = 0.0 (need temporal/multi-agent data).
+
+---
+
+### Individual Dimensions
+
+#### `deng_entropy(masses) -> float`
+Compute Deng entropy from belief function evidence. Generalizes Shannon entropy.
+
+#### `shannon_entropy(probs) -> float`
+Standard Shannon entropy. Special case of Deng entropy with singleton focal elements.
+
+#### `belief_degree_huang(outcomes, p_a_true=0.5, p_a_false=0.5, n_unobserved=1) -> float`
+Compute Huang interference value (D_b). The core Psi2 computation.
+
+#### `quantum_probability(conditionals, p_a_true=0.5, p_a_false=0.5) -> Dict[str, float]`
+Full QLBN probability with Huang interference and Born normalization.
+
+#### `compute_psi3(values, window_size=3) -> float`
+Compute Psi3 (interference volatility) from a behavioral sequence.
+
+#### `compute_psi4(agent_probabilities) -> float`
+Compute Psi4 (relational entropy) from cross-agent decision data.
+
+### Utilities
+
+#### `cohens_d(group_a, group_b) -> float`
+Cohen's d effect size with pooled standard deviation.
+
+#### `verify_huang_paper() -> Dict[str, bool]`
+Run 7 verification checks against Huang et al. (2019) published values.
+Raises `VerificationError` on critical failure.
+
+---
+
+### Data Structures
+
+#### `PsiProfile` (frozen dataclass)
+```python
+@dataclass(frozen=True)
+class PsiProfile:
+    psi_1: float          # Informational entropy
+    psi_2: float          # Behavioral entropy
+    psi_3: float          # Adaptive entropy
+    psi_4: float          # Relational entropy
+    belief_degree: float  # Raw Huang D_b value
+    method: str           # "huang_2019"
+
+    def to_dict(self) -> Dict[str, float]:
+        """Serialize for JSON/API responses."""
+```
+
+Immutable. Thread-safe. Serializable via `.to_dict()`.
+
+#### `ConditionalProbability` (frozen dataclass)
+Validated probability pair. Raises `ValueError` on construction if values outside [0, 1].
+
+#### `PsiMethod` (enum)
+`HUANG_2019 = "huang_2019"` | `CLASSICAL = "classical"`
+
+---
+
+## Error Handling
+
+All public functions validate inputs and raise descriptive exceptions:
+
+```python
+from insight137_eap import compute_psi_from_sequence
+
+# Empty input
+compute_psi_from_sequence([])
+# ValueError: values requires >= 1 elements, got 0
+
+# NaN values
+compute_psi_from_sequence([1.0, float('nan'), 3.0])
+# ValueError: values contains NaN or Inf values
+
+# Invalid priors
+compute_psi_from_conditionals(data, p_a_true=0.7, p_a_false=0.7)
+# ValueError: Prior probabilities must sum to ~1.0, got 1.4000
+```
+
+---
+
+## Validation Results
+
+Run `python insight137_eap.py` to execute the built-in verification suite:
+
+```
+Insight137 EAP v2.0.0
+Entropy Attunement Protocol - Verification Suite
+
+Huang et al. (2019) verification:
+  [PASS] belief_degree_match      (Db=-0.9421, expected -0.9420)
+  [PASS] probability_match        (P=0.6925, expected 0.6926)
+  [PASS] amplitude_alpha          (0.3606, expected 0.3606)
+  [PASS] amplitude_beta           (0.2550, expected 0.2550)
+  [PASS] deng_shannon_equivalence (singleton reduction exact)
+  [PASS] deng_exceeds_shannon     (imprecise > precise)
+  [PASS] psi_profile_valid        (all dimensions populated)
+
+7/7 checks passed
+ALL VERIFICATIONS PASSED
+```
+
+---
+
+## References
+
+The mathematical foundations are not ours. We integrate and validate:
+
+- **Deng (2016)** — Deng entropy. *Chaos, Solitons & Fractals*, 91, 549-553.
+- **Huang, Yang, Jiang (2019)** — Belief entropy interference for QLBN. *Applied Mathematics and Computation*, 347, 417-428.
+- **Moreira & Wichert (2016)** — Quantum-like Bayesian networks. *Frontiers in Psychology*, 7, 11.
+- **Meghdadi, Akbarzadeh-T, Javidan (2022)** — BEQBN entanglement. *Applied Soft Computing*, 118, 108528.
+- **Busemeyer & Bruza (2012)** — *Quantum Models of Cognition and Decision*. Cambridge University Press.
+- **Shannon (1948)** — A mathematical theory of communication. *Bell System Technical Journal*, 27(3).
+
+Our contributions: integration architecture, Psi3 temporal volatility, chishu temporal model, cross-domain validation (128,675 samples), behavioral archetype taxonomy, production implementation.
+
+---
+
+## License
+
+CC BY-NC-ND 4.0 — Insight137 (insight137.com)
+
+For commercial licensing: roger@insight137.com

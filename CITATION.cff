@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "Insight137 EAP: Entropy Attunement Protocol"
+version: 2.0.0
+date-released: "2026-04-07"
+license: CC-BY-NC-ND-4.0
+url: "https://insight137.com/research"
+repository-code: "https://github.com/Insight137/insight137-eap"
+authors:
+  - family-names: "Yau"
+    given-names: "Roger"
+    email: "roger@insight137.com"
+    affiliation: "Insight137"
+keywords:
+  - quantum cognition
+  - entropy
+  - behavioral prediction
+  - AI safety
+  - Deng entropy
+  - interference measurement
