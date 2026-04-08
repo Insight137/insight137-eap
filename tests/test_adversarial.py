@@ -301,11 +301,11 @@ class TestNumericalEdgeCases:
         assert result > 0.0
 
     def test_deng_entropy_huge_cardinality(self):
-        """Very large cardinality (2^1024) causes OverflowError because
-        Python bigint (2**1024 - 1) can't convert to float for np.log2.
-        This is a known limitation — documents the overflow boundary."""
-        with pytest.raises(OverflowError):
-            eap.deng_entropy([(1024, 1.0)])
+        """Very large cardinality (2^1024) is handled via log-space
+        approximation to avoid OverflowError."""
+        result = eap.deng_entropy([(1024, 1.0)])
+        assert np.isfinite(result)
+        assert result > 0.0
 
     def test_shannon_entropy_tiny_probabilities(self):
         """Very small probabilities: -p*log2(p) should stay finite."""

@@ -184,8 +184,13 @@ def deng_entropy(masses: List[Tuple[int, float]]) -> float:
         if mass < 0.0:
             raise ValueError(f"Mass must be >= 0, got {mass}")
         if mass > EPSILON:
-            num_subsets = (2 ** cardinality) - 1
-            entropy -= mass * np.log2(mass / num_subsets)
+            if cardinality < 1023:
+                num_subsets = (2 ** cardinality) - 1
+                entropy -= mass * np.log2(mass / num_subsets)
+            else:
+                # For large cardinalities, log2(2^card - 1) ≈ card
+                # to avoid OverflowError when converting bigint to float.
+                entropy -= mass * (np.log2(mass) - cardinality)
     return float(entropy)
 
 
