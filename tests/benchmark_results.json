@@ -1,167 +1,167 @@
 {
   "latency_psi_seq_10": {
-    "mean_us": 83.24562241401246,
-    "std_us": 25.360092015039786,
-    "min_us": 64.19996498152614,
-    "max_us": 695.5999997444451,
-    "n_iter": 5197,
-    "calls_per_sec": 12012.643680248024
+    "mean_us": 70.36662420455215,
+    "std_us": 18.37180459767448,
+    "min_us": 49.80002995580435,
+    "max_us": 345.1000084169209,
+    "n_iter": 7062,
+    "calls_per_sec": 14211.282853260824
   },
   "latency_psi_seq_100": {
-    "mean_us": 96.50873098007423,
-    "std_us": 21.26494009265945,
-    "min_us": 77.60000880807638,
-    "max_us": 353.2999544404447,
-    "n_iter": 2199,
-    "calls_per_sec": 10361.756805262168
+    "mean_us": 72.46854775219884,
+    "std_us": 25.583699428314073,
+    "min_us": 56.299963034689426,
+    "max_us": 552.1000130102038,
+    "n_iter": 2906,
+    "calls_per_sec": 13799.089826105394
   },
   "latency_psi_seq_1000": {
-    "mean_us": 229.99538496757546,
-    "std_us": 29.741333830229962,
-    "min_us": 191.80000526830554,
-    "max_us": 577.9999773949385,
-    "n_iter": 1950,
-    "calls_per_sec": 4347.913329395627
+    "mean_us": 123.47786490402142,
+    "std_us": 33.57175475798932,
+    "min_us": 91.29999671131372,
+    "max_us": 829.3999708257616,
+    "n_iter": 3831,
+    "calls_per_sec": 8098.617519644463
   },
   "latency_psi_seq_10000": {
-    "mean_us": 1892.850000206917,
-    "std_us": 126.5201130697905,
-    "min_us": 1660.8000150881708,
-    "max_us": 2687.899977900088,
-    "n_iter": 278,
-    "calls_per_sec": 528.3038803342499
+    "mean_us": 1005.319157664321,
+    "std_us": 123.89987685470263,
+    "min_us": 800.7000433281064,
+    "max_us": 1721.800013910979,
+    "n_iter": 475,
+    "calls_per_sec": 994.708986072961
   },
   "latency_psi_cond_2": {
-    "mean_us": 13.923554534868565,
-    "std_us": 4.530139372338462,
-    "min_us": 10.499963536858559,
-    "max_us": 257.1999793872237,
-    "n_iter": 24509,
-    "calls_per_sec": 71820.74070925738
+    "mean_us": 14.053625092591234,
+    "std_us": 5.485201681180579,
+    "min_us": 10.999967344105244,
+    "max_us": 260.6999478302896,
+    "n_iter": 26454,
+    "calls_per_sec": 71156.0179961808
   },
   "latency_psi_cond_10": {
-    "mean_us": 22.686039193154144,
-    "std_us": 8.986794960214715,
-    "min_us": 17.3999578692019,
-    "max_us": 323.1000155210495,
-    "n_iter": 17857,
-    "calls_per_sec": 44079.97321549921
+    "mean_us": 22.41806968193152,
+    "std_us": 8.953752598953624,
+    "min_us": 16.600009985268116,
+    "max_us": 273.4000445343554,
+    "n_iter": 14577,
+    "calls_per_sec": 44606.87357065262
   },
   "latency_psi4_11": {
-    "mean_us": 38.39344132234696,
-    "std_us": 60.6282216991141,
-    "min_us": 23.200002033263445,
-    "max_us": 2525.0999606214464,
-    "n_iter": 6983,
-    "calls_per_sec": 26046.1153144391
+    "mean_us": 19.22471762360489,
+    "std_us": 11.240208679632628,
+    "min_us": 13.899989426136017,
+    "max_us": 361.79996095597744,
+    "n_iter": 17793,
+    "calls_per_sec": 52016.368696732345
   },
   "latency_psi4_100": {
-    "mean_us": 138.17970757148544,
-    "std_us": 28.966568335400144,
-    "min_us": 115.90000940486789,
-    "max_us": 493.50003246217966,
-    "n_iter": 2597,
-    "calls_per_sec": 7236.952643590328
+    "mean_us": 73.14947541822666,
+    "std_us": 19.99628793732161,
+    "min_us": 53.099996875971556,
+    "max_us": 467.40000834688544,
+    "n_iter": 6195,
+    "calls_per_sec": 13670.638022796127
   },
   "latency_verify_huang": {
-    "mean_us": 32.16178813292774,
-    "std_us": 11.333598276501315,
-    "min_us": 25.600020308047533,
-    "max_us": 462.9000322893262,
-    "n_iter": 11520,
-    "calls_per_sec": 31092.798567881382
+    "mean_us": 33.6661471859553,
+    "std_us": 9.06282649485026,
+    "min_us": 27.59997732937336,
+    "max_us": 278.99997076019645,
+    "n_iter": 4363,
+    "calls_per_sec": 29703.428624501936
   },
   "throughput_psi_seq_100": {
-    "mean_us": 94.40892761345448,
-    "std_us": 24.187028535561147,
-    "min_us": 67.39998934790492,
-    "max_us": 402.199977543205,
-    "n_iter": 4122,
-    "calls_per_sec": 10592.218609815956
+    "mean_us": 74.67279681570805,
+    "std_us": 15.68509510674438,
+    "min_us": 57.20002809539437,
+    "max_us": 345.20000917837024,
+    "n_iter": 5617,
+    "calls_per_sec": 13391.757676734582
   },
   "throughput_quantum_prob": {
-    "mean_us": 4.956452033948153,
-    "std_us": 4.2604003324005655,
-    "min_us": 3.6999699659645557,
-    "max_us": 250.8999896235764,
+    "mean_us": 4.983341977931559,
+    "std_us": 1.9852946638710276,
+    "min_us": 3.7999707274138927,
+    "max_us": 163.30002108588815,
     "n_iter": 50000,
-    "calls_per_sec": 201757.2233425674
+    "calls_per_sec": 200668.5482209413
   },
   "throughput_belief_degree": {
-    "mean_us": 2.9187139868736267,
-    "std_us": 1.9110657829546822,
-    "min_us": 2.2999593056738377,
-    "max_us": 241.79997853934765,
+    "mean_us": 2.827654022257775,
+    "std_us": 2.0339588459626343,
+    "min_us": 2.100015990436077,
+    "max_us": 179.90003107115626,
     "n_iter": 50000,
-    "calls_per_sec": 342616.64709091536
+    "calls_per_sec": 353650.05482585094
   },
   "scaling_10": {
-    "mean_us": 87.61814716144768,
-    "std_us": 19.90163384721437,
-    "min_us": 66.49998249486089,
-    "max_us": 470.70003347471356,
-    "n_iter": 5268,
-    "calls_per_sec": 11413.160770877426
+    "mean_us": 75.4653677276061,
+    "std_us": 30.27382601068039,
+    "min_us": 52.69999383017421,
+    "max_us": 519.900000654161,
+    "n_iter": 4516,
+    "calls_per_sec": 13251.111471549732
   },
   "scaling_50": {
-    "mean_us": 99.24973514360394,
-    "std_us": 31.61220272650957,
-    "min_us": 68.59999848529696,
-    "max_us": 1393.0999557487667,
-    "n_iter": 4156,
-    "calls_per_sec": 10075.593638140243
+    "mean_us": 76.33128299509619,
+    "std_us": 25.67114929787548,
+    "min_us": 53.70000144466758,
+    "max_us": 549.9999970197678,
+    "n_iter": 2276,
+    "calls_per_sec": 13100.788572677913
   },
   "scaling_100": {
-    "mean_us": 104.17833202298009,
-    "std_us": 26.353930259457897,
-    "min_us": 75.89999586343765,
-    "max_us": 417.79997991397977,
-    "n_iter": 4329,
-    "calls_per_sec": 9598.925041144024
+    "mean_us": 72.21797747146826,
+    "std_us": 18.697961823519275,
+    "min_us": 57.09996912628412,
+    "max_us": 762.3000419698656,
+    "n_iter": 6675,
+    "calls_per_sec": 13846.967680520796
   },
   "scaling_500": {
-    "mean_us": 153.53440106053276,
-    "std_us": 34.55324415640857,
-    "min_us": 108.20000898092985,
-    "max_us": 529.2000132612884,
-    "n_iter": 2965,
-    "calls_per_sec": 6513.198300136906
+    "mean_us": 98.23449382797801,
+    "std_us": 25.77362697465748,
+    "min_us": 73.69997911155224,
+    "max_us": 522.2000181674957,
+    "n_iter": 4366,
+    "calls_per_sec": 10179.72364932359
   },
   "scaling_1000": {
-    "mean_us": 236.75944666256723,
-    "std_us": 41.94494672078734,
-    "min_us": 180.60003640130162,
-    "max_us": 619.0999993123114,
-    "n_iter": 1265,
-    "calls_per_sec": 4223.696304820367
+    "mean_us": 124.92301451461037,
+    "std_us": 31.196488525708126,
+    "min_us": 92.50000584870577,
+    "max_us": 652.6000215671957,
+    "n_iter": 3563,
+    "calls_per_sec": 8004.930107438649
   },
   "scaling_5000": {
-    "mean_us": 866.8348316124149,
-    "std_us": 149.85975466364764,
-    "min_us": 634.6000009216368,
-    "max_us": 1846.9999777153134,
-    "n_iter": 356,
-    "calls_per_sec": 1153.6223090388307
+    "mean_us": 319.15552079037116,
+    "std_us": 59.70190545355764,
+    "min_us": 233.90003480017185,
+    "max_us": 696.2000043131411,
+    "n_iter": 1585,
+    "calls_per_sec": 3133.2686883296105
   },
   "scaling_10000": {
-    "mean_us": 1860.5167336039701,
-    "std_us": 154.92621603477812,
-    "min_us": 1591.9000143185258,
-    "max_us": 2512.0999780483544,
-    "n_iter": 245,
-    "calls_per_sec": 537.4850878459555
+    "mean_us": 1129.1816000593826,
+    "std_us": 186.78782525171127,
+    "min_us": 858.3000162616372,
+    "max_us": 2525.299962144345,
+    "n_iter": 500,
+    "calls_per_sec": 885.5971439380618
   },
-  "scaling_slope": 0.4386990901652941,
+  "scaling_slope": 0.34952208060760814,
   "scaling_complexity": "O(n)",
   "threshold_100ms": ">100,000",
   "threshold_1s": ">500,000",
   "memory_10k_seq": {
-    "current_kb": 82.5341796875,
-    "peak_kb": 1597.1259765625
+    "current_kb": 80.2763671875,
+    "peak_kb": 1753.5634765625
   },
   "memory_1000x100_seq": {
-    "current_kb": 15.2216796875,
-    "peak_kb": 33.8369140625
+    "current_kb": 12.21484375,
+    "peak_kb": 32.580078125
   },
   "memory_leak_check": {
     "total_diff_kb": 2.1142578125,
@@ -183,35 +183,35 @@
         "size_diff_kb": 0.3125
       },
       {
-        "file": "C:\\Program Files\\Python311\\Lib\\tracemalloc.py:558",
-        "size_diff_kb": 0.0546875
+        "file": "C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:411",
+        "size_diff_kb": 0.09375
       }
     ]
   },
   "vec_vs_loop": {
-    "vectorized_mean_us": 68.35280044469982,
-    "loop_mean_us": 2709.3105009407736,
-    "speedup": 39.63715434209188
+    "vectorized_mean_us": 67.88380048237741,
+    "loop_mean_us": 2646.0629995563067,
+    "speedup": 38.97929963781599
   },
   "cprofile_hotspots": {
     "top_3_hotspots": [
       {
         "ncalls": "1000",
-        "tottime": "0.024",
-        "function": "C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:422(_compute_sliding_interferences)"
+        "tottime": "0.023",
+        "function": "C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:425(_compute_sliding_interferences)"
       },
       {
         "ncalls": "2000",
         "tottime": "0.022",
-        "function": "C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:400(_belief_distance_vec)"
+        "function": "C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:403(_belief_distance_vec)"
       },
       {
         "ncalls": "2000",
-        "tottime": "0.015",
+        "tottime": "0.014",
         "function": "Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:148(_var)"
       }
     ],
-    "full_profile": "         279001 function calls in 0.227 seconds\n\n   Ordered by: internal time\n   List reduced from 82 to 15 due to restriction <15>\n\n   ncalls  tottime  percall  cumtime  percall filename:lineno(function)\n     1000    0.024    0.000    0.069    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:422(_compute_sliding_interferences)\n     2000    0.022    0.000    0.029    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:400(_belief_distance_vec)\n     2000    0.015    0.000    0.026    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:148(_var)\n    12000    0.012    0.000    0.012    0.000 {method 'reduce' of 'numpy.ufunc' objects}\n     1000    0.010    0.000    0.081    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:540(compute_psi4)\n     1000    0.010    0.000    0.227    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:587(compute_psi_from_sequence)\n    11000    0.009    0.000    0.015    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:116(_validate_probability)\n     4000    0.009    0.000    0.009    0.000 {built-in method numpy.asanyarray}\n     2000    0.007    0.000    0.011    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\lib\\_stride_tricks_impl.py:373(_broadcast_to)\n     5000    0.006    0.000    0.006    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:96(_clip)\n     1000    0.006    0.000    0.013    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:198(shannon_entropy)\n     4000    0.005    0.000    0.006    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:73(_count_reduce_items)\n     2000    0.005    0.000    0.017    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:115(_mean)\n     1000    0.005    0.000    0.019    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:564(<listcomp>)\n     4000    0.004    0.000    0.010    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\fromnumeri"
+    "full_profile": "         166001 function calls in 0.149 seconds\n\n   Ordered by: internal time\n   List reduced from 53 to 15 due to restriction <15>\n\n   ncalls  tottime  percall  cumtime  percall filename:lineno(function)\n     1000    0.023    0.000    0.066    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:425(_compute_sliding_interferences)\n     2000    0.022    0.000    0.029    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:403(_belief_distance_vec)\n     2000    0.014    0.000    0.021    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:148(_var)\n     1000    0.011    0.000    0.034    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:552(compute_psi4)\n    11000    0.011    0.000    0.011    0.000 {method 'reduce' of 'numpy.ufunc' objects}\n     6000    0.007    0.000    0.007    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:96(_clip)\n     1000    0.007    0.000    0.149    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:606(compute_psi_from_sequence)\n     1000    0.006    0.000    0.013    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:199(shannon_entropy)\n     6000    0.004    0.000    0.016    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py:2207(clip)\n     4000    0.004    0.000    0.010    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py:86(_wrapreduction_any_all)\n     3000    0.004    0.000    0.004    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:73(_count_reduce_items)\n     8000    0.004    0.000    0.015    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py:48(_wrapfunc)\n     2000    0.003    0.000    0.024    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:217(_std)\n     1000    0.003    0.000    0.006    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:115(_mean)\n     5000    0.002    0.000    0.002    0.0"
   },
   "optimization_suggestions": [
     "1. _belief_distance_vec: Already vectorized. Further gains possible via Cython/Numba JIT compilation of the inner np.where logic.",

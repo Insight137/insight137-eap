@@ -854,7 +854,7 @@ class TestAdditionalAttacks:
         interferences = eap._compute_sliding_interferences(
             np.array([0.0, 0.0, 0.0, 0.0]), window_size=3
         )
-        assert interferences == []
+        assert len(interferences) == 0
 
     def test_psi3_returns_zero_for_short_sequence(self):
         """Sequences shorter than MIN_WINDOW_SIZE+1 should return 0.0."""

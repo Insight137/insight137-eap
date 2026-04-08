@@ -24,6 +24,7 @@ __author__ = "Roger Yau"
 __license__ = "CC BY-NC-ND 4.0"
 
 import math
+from functools import lru_cache
 import numpy as np
 from typing import Dict, List, Tuple, Optional, Sequence, Union
 from dataclasses import dataclass, field
@@ -147,7 +148,7 @@ def _validate_sequence(
         raise ValueError(
             f"{name} requires >= {min_length} elements, got {len(arr)}"
         )
-    if np.any(np.isnan(arr)) or np.any(np.isinf(arr)):
+    if not np.all(np.isfinite(arr)):
         raise ValueError(f"{name} contains NaN or Inf values")
     return arr
 
@@ -393,8 +394,10 @@ def quantum_probability(
 # interference patterns over temporal sequences.
 # ═══════════════════════════════════════════════════════════════════════
 
-# Pre-computed constant to avoid repeated math.sqrt(0.5) calls
+# Pre-computed constants to avoid repeated computation per call
 _SQRT_HALF = math.sqrt(0.5)
+_EMPTY_ARRAY = np.array([], dtype=np.float64)
+_HUANG_METHOD = "huang_2019"  # cached string avoids PsiMethod enum lookup per call
 
 
 def _belief_distance_vec(alpha: np.ndarray, beta: np.ndarray) -> np.ndarray:
@@ -422,7 +425,7 @@ def _belief_distance_vec(alpha: np.ndarray, beta: np.ndarray) -> np.ndarray:
 def _compute_sliding_interferences(
     values: np.ndarray,
     window_size: int = DEFAULT_WINDOW_SIZE,
-) -> List[float]:
+) -> np.ndarray:
     """Compute Huang interference over sliding windows of a sequence.
 
     For each window position, normalizes values to a probability
@@ -437,12 +440,13 @@ def _compute_sliding_interferences(
         window_size: Number of elements per window (>= 2).
 
     Returns:
-        List of D_b values, one per window position.
+        numpy array of D_b values, one per valid window position.
+        Empty array if no valid windows.
     """
     n = len(values)
     effective_window = min(window_size, n)
     if effective_window < MIN_WINDOW_SIZE:
-        return []
+        return _EMPTY_ARRAY
 
     num_windows = n - effective_window + 1
 
@@ -455,7 +459,7 @@ def _compute_sliding_interferences(
     # Filter windows with sum > EPSILON
     valid = window_sums > EPSILON
     if not np.any(valid):
-        return []
+        return _EMPTY_ARRAY
 
     valid_indices = np.nonzero(valid)[0]
     valid_sums = window_sums[valid_indices]
@@ -469,7 +473,9 @@ def _compute_sliding_interferences(
     #   alpha = sqrt(p_true * 0.5), beta = sqrt(p_false * 0.5)
     #   num_subsets = 1, so db = sum(bd * log2(bd))
     sqrt_half = _SQRT_HALF
-    bd1 = _belief_distance_vec(np.sqrt(p1) * sqrt_half, np.sqrt(p2) * sqrt_half)
+    sp1 = np.sqrt(p1)
+    sp2 = np.sqrt(p2)
+    bd1 = _belief_distance_vec(sp1 * sqrt_half, sp2 * sqrt_half)
     bd2 = _belief_distance_vec(np.sqrt(1.0 - p1) * sqrt_half, np.sqrt(1.0 - p2) * sqrt_half)
 
     # Belief degree: sum of bd * log2(bd) for each outcome (num_subsets=1)
@@ -479,7 +485,7 @@ def _compute_sliding_interferences(
     mask2 = bd2 > EPSILON
     db[mask2] += bd2[mask2] * np.log2(bd2[mask2])
 
-    return db.tolist()
+    return db
 
 
 def compute_psi3(
@@ -510,7 +516,7 @@ def compute_psi3(
     interferences = _compute_sliding_interferences(arr, window_size)
     if len(interferences) < 2:
         return 0.0
-    return float(np.std(interferences, ddof=0))
+    return float(interferences.std())
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -537,6 +543,12 @@ def _bias_phase(p: float, p0: float = PHASE_BIAS_CENTER) -> float:
     return math.asin(scaled)
 
 
+@lru_cache(maxsize=64)
+def _triu_indices_cached(n: int) -> Tuple[np.ndarray, np.ndarray]:
+    """Cached upper-triangle indices for pairwise computation."""
+    return np.triu_indices(n, k=1)
+
+
 def compute_psi4(
     agent_probabilities: Sequence[float],
 ) -> float:
@@ -561,23 +573,30 @@ def compute_psi4(
     Raises:
         ValueError: If any probability is outside [0, 1].
     """
-    probs = [_validate_probability(p, f"agent_{i}") for i, p in enumerate(agent_probabilities)]
-    n = len(probs)
+    # Batch validation: type-check then validate with numpy
+    for i, p in enumerate(agent_probabilities):
+        if not isinstance(p, (int, float)):
+            raise TypeError(f"agent_{i} must be numeric, got {type(p).__name__}")
+    arr = np.asarray(agent_probabilities, dtype=np.float64)
+    if not np.all(np.isfinite(arr)):
+        # Find the first bad value for a clear error message
+        for i, p in enumerate(agent_probabilities):
+            if math.isnan(p) or math.isinf(p):
+                raise ValueError(f"agent_{i} must be finite, got {p}")
+    n = len(arr)
     if n < MIN_AGENTS_PSI4:
         return 0.0
 
     # Vectorized: clamp, compute phases, then pairwise via broadcasting
-    clamped = np.maximum(np.array(probs, dtype=np.float64), PROB_FLOOR)
+    clamped = np.clip(arr, PROB_FLOOR, 1.0)
     phases = np.arcsin(np.clip((clamped - PHASE_BIAS_CENTER) / PHASE_BIAS_CENTER, -1.0, 1.0))
 
-    i_idx, j_idx = np.triu_indices(n, k=1)
+    i_idx, j_idx = _triu_indices_cached(n)
     cos_diff = np.cos(phases[i_idx] - phases[j_idx])
     weight = np.sqrt(clamped[i_idx] * clamped[j_idx])
     pairwise = cos_diff * weight
 
-    if len(pairwise) < 1:
-        return 0.0
-    return float(np.std(pairwise, ddof=0))
+    return float(pairwise.std())
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -621,15 +640,16 @@ def compute_psi_from_sequence(
 
     # Ψ₂: Mean Huang interference over sliding windows
     interferences = _compute_sliding_interferences(arr, window_size)
-    if interferences:
-        psi_2 = float(abs(np.mean(interferences)))
-        db = float(np.mean(interferences))
+    n_interf = len(interferences)
+    if n_interf > 0:
+        db = float(interferences.mean())
+        psi_2 = abs(db)
     else:
         psi_2 = 0.0
         db = 0.0
 
     # Ψ₃: Volatility of interference
-    psi_3 = float(np.std(interferences, ddof=0)) if len(interferences) >= 2 else 0.0
+    psi_3 = float(interferences.std()) if n_interf >= 2 else 0.0
 
     # Ψ₄: Relational entropy (requires multi-agent data)
     psi_4 = 0.0
@@ -642,7 +662,7 @@ def compute_psi_from_sequence(
         psi_3=round(psi_3, 6),
         psi_4=round(psi_4, 6),
         belief_degree=round(db, 6),
-        method=PsiMethod.HUANG_2019.value,
+        method=_HUANG_METHOD,
     )
 
 
@@ -698,7 +718,7 @@ def compute_psi_from_conditionals(
         psi_3=0.0,
         psi_4=0.0,
         belief_degree=round(db, 6),
-        method=PsiMethod.HUANG_2019.value,
+        method=_HUANG_METHOD,
     )
 
 

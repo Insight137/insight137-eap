@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p C:/Code-Workspace/insight137-eap/tests)",
+      "Bash(touch C:/Code-Workspace/insight137-eap/tests/__init__.py)",
+      "Bash(python -m pytest tests/test_adversarial.py -v --tb=short)",
+      "Bash(pip install:*)",
+      "Bash(python -m pytest tests/test_property_based.py -v --tb=long)",
+      "Bash(python -m pytest tests/ -v --tb=short)",
+      "Bash(python -m pytest tests/ -v --tb=long)",
+      "Bash(python bench.py)",
+      "Bash(python -c \"import insight137_eap as eap; r = eap.verify_huang_paper\\(\\); print\\(f''{sum\\(r.values\\(\\)\\)}/{len\\(r\\)} checks passed''\\); [print\\(f''  {k}: {v}''\\) for k,v in r.items\\(\\)]\")",
+      "Bash(python -m pytest tests/ -q --tb=short)",
+      "Bash(python -m pytest tests/test_performance.py -v -s --tb=short)",
+      "Bash(python bench2.py)",
+      "Bash(python -c \"import insight137_eap as eap; r = eap.verify_huang_paper\\(\\); print\\(f''{sum\\(r.values\\(\\)\\)}/{len\\(r\\)} checks passed''\\)\")",
+      "Bash(python -m pytest tests/test_adversarial.py tests/test_property_based.py -q --tb=short)",
+      "Bash(python -m pytest tests/test_adversarial.py tests/test_property_based.py -v --tb=long)",
+      "Bash(python -m pytest tests/test_performance.py -q --tb=short)",
+      "Bash(python insight137_eap.py)",
+      "Bash(python -m pytest tests/test_property_based.py -v --tb=short)",
+      "Bash(python -m pytest tests/test_performance.py -v --tb=short)",
+      "Bash(python examples/example_verify.py)",
+      "Bash(PYTHONPATH=. python examples/example_verify.py)",
+      "Bash(PYTHONPATH=. python examples/example_sequence.py)",
+      "Bash(PYTHONPATH=. python examples/example_conditionals.py)",
+      "Bash(PYTHONPATH=. python examples/example_psi4.py)"
+    ]
+  }
+}
