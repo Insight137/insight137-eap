@@ -23,6 +23,7 @@ __version__ = "2.0.0"
 __author__ = "Roger Yau"
 __license__ = "CC BY-NC-ND 4.0"
 
+import math
 import numpy as np
 from typing import Dict, List, Tuple, Optional, Sequence, Union
 from dataclasses import dataclass, field
@@ -116,9 +117,9 @@ def _validate_probability(value: float, name: str) -> float:
     """Validate and clamp a probability value to [0, 1]."""
     if not isinstance(value, (int, float)):
         raise TypeError(f"{name} must be numeric, got {type(value).__name__}")
-    if np.isnan(value) or np.isinf(value):
+    if math.isnan(value) or math.isinf(value):
         raise ValueError(f"{name} must be finite, got {value}")
-    return float(np.clip(value, 0.0, 1.0))
+    return max(0.0, min(float(value), 1.0))
 
 
 def _validate_probability_pair(
@@ -186,11 +187,11 @@ def deng_entropy(masses: List[Tuple[int, float]]) -> float:
         if mass > EPSILON:
             if cardinality < 1023:
                 num_subsets = (2 ** cardinality) - 1
-                entropy -= mass * np.log2(mass / num_subsets)
+                entropy -= mass * math.log2(mass / num_subsets)
             else:
                 # For large cardinalities, log2(2^card - 1) ≈ card
                 # to avoid OverflowError when converting bigint to float.
-                entropy -= mass * (np.log2(mass) - cardinality)
+                entropy -= mass * (math.log2(mass) - cardinality)
     return float(entropy)
 
 
@@ -239,9 +240,9 @@ def _compute_amplitude_vectors(
     Returns:
         Tuple of (alpha, beta) amplitude values.
     """
-    alpha = np.sqrt(max(p_b_given_a_true, 0.0)) * np.sqrt(max(p_a_true, 0.0))
-    beta = np.sqrt(max(p_b_given_a_false, 0.0)) * np.sqrt(max(p_a_false, 0.0))
-    return float(alpha), float(beta)
+    alpha = math.sqrt(max(p_b_given_a_true, 0.0)) * math.sqrt(max(p_a_true, 0.0))
+    beta = math.sqrt(max(p_b_given_a_false, 0.0)) * math.sqrt(max(p_a_false, 0.0))
+    return alpha, beta
 
 
 def _belief_distance(alpha: float, beta: float) -> float:
@@ -260,7 +261,7 @@ def _belief_distance(alpha: float, beta: float) -> float:
     if denominator < EPSILON:
         return abs(alpha)
     bd = abs(alpha + (alpha - beta) / denominator)
-    return float(np.clip(bd, 0.0, 1.0))
+    return max(0.0, min(bd, 1.0))
 
 
 def belief_degree_huang(
@@ -312,8 +313,8 @@ def belief_degree_huang(
     db = 0.0
     for bd in belief_distances:
         if bd > EPSILON:
-            db += bd * np.log2(bd / num_subsets)
-    return float(db)
+            db += bd * math.log2(bd / num_subsets)
+    return db
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -366,7 +367,7 @@ def quantum_probability(
         p_t = float(cond["p_given_a_true"])
         p_f = float(cond["p_given_a_false"])
         classical = p_t * p_a_true + p_f * p_a_false
-        interference = 2.0 * db * np.sqrt(
+        interference = 2.0 * db * math.sqrt(
             p_t * p_a_true * p_f * p_a_false
         )
         raw_probs[name] = classical + interference
@@ -392,6 +393,32 @@ def quantum_probability(
 # interference patterns over temporal sequences.
 # ═══════════════════════════════════════════════════════════════════════
 
+# Pre-computed constant to avoid repeated math.sqrt(0.5) calls
+_SQRT_HALF = math.sqrt(0.5)
+
+
+def _belief_distance_vec(alpha: np.ndarray, beta: np.ndarray) -> np.ndarray:
+    """Vectorized Belief Distance (Huang et al. 2019, Eq. 18).
+
+    Computes belief distance for arrays of alpha/beta pairs in a
+    single numpy pass. Equivalent to calling _belief_distance on
+    each pair, but ~100x faster for large arrays.
+    """
+    # Swap so alpha is the amplitude closer to 0.5
+    dist_a = np.abs(alpha - 0.5)
+    dist_b = np.abs(beta - 0.5)
+    swap = dist_a >= dist_b
+    a = np.where(swap, beta, alpha)
+    b = np.where(swap, alpha, beta)
+
+    denom = np.abs(a + b - 1.0)
+    small = denom < EPSILON
+
+    # Safe division: use 1.0 for small denominators (overwritten by np.where)
+    safe_denom = np.where(small, 1.0, denom)
+    bd = np.where(small, np.abs(a), np.abs(a + (a - b) / safe_denom))
+    return np.clip(bd, 0.0, 1.0)
+
 def _compute_sliding_interferences(
     values: np.ndarray,
     window_size: int = DEFAULT_WINDOW_SIZE,
@@ -401,6 +428,9 @@ def _compute_sliding_interferences(
     For each window position, normalizes values to a probability
     distribution, forms a binary conditional, and computes the
     Huang Belief Degree.
+
+    Vectorized: computes all windows in a single numpy pass instead
+    of calling belief_degree_huang per window.
 
     Args:
         values: 1-D array of positive values (e.g., message lengths).
@@ -414,22 +444,42 @@ def _compute_sliding_interferences(
     if effective_window < MIN_WINDOW_SIZE:
         return []
 
-    interferences: List[float] = []
-    for start in range(n - effective_window + 1):
-        window = values[start : start + effective_window]
-        window_sum = window.sum()
-        if window_sum <= EPSILON:
-            continue
-        normalized = window / window_sum
-        p1 = float(np.clip(normalized[0], PROB_FLOOR, PROB_CEILING))
-        p2 = float(np.clip(normalized[1], PROB_FLOOR, PROB_CEILING))
-        outcomes = [
-            {"p_given_a_true": p1, "p_given_a_false": p2},
-            {"p_given_a_true": 1.0 - p1, "p_given_a_false": 1.0 - p2},
-        ]
-        db = belief_degree_huang(outcomes)
-        interferences.append(db)
-    return interferences
+    num_windows = n - effective_window + 1
+
+    # Vectorized window sums via cumsum
+    cumsum = np.empty(n + 1)
+    cumsum[0] = 0.0
+    np.cumsum(values, out=cumsum[1:])
+    window_sums = cumsum[effective_window:] - cumsum[:num_windows]
+
+    # Filter windows with sum > EPSILON
+    valid = window_sums > EPSILON
+    if not np.any(valid):
+        return []
+
+    valid_indices = np.nonzero(valid)[0]
+    valid_sums = window_sums[valid_indices]
+
+    # Normalized p1, p2 for each valid window, clamped to [PROB_FLOOR, PROB_CEILING]
+    p1 = np.clip(values[valid_indices] / valid_sums, PROB_FLOOR, PROB_CEILING)
+    p2 = np.clip(values[valid_indices + 1] / valid_sums, PROB_FLOOR, PROB_CEILING)
+
+    # Vectorized belief distance for both outcomes.
+    # With default priors (0.5, 0.5), n_unobserved=1:
+    #   alpha = sqrt(p_true * 0.5), beta = sqrt(p_false * 0.5)
+    #   num_subsets = 1, so db = sum(bd * log2(bd))
+    sqrt_half = _SQRT_HALF
+    bd1 = _belief_distance_vec(np.sqrt(p1) * sqrt_half, np.sqrt(p2) * sqrt_half)
+    bd2 = _belief_distance_vec(np.sqrt(1.0 - p1) * sqrt_half, np.sqrt(1.0 - p2) * sqrt_half)
+
+    # Belief degree: sum of bd * log2(bd) for each outcome (num_subsets=1)
+    db = np.zeros(len(valid_indices))
+    mask1 = bd1 > EPSILON
+    db[mask1] += bd1[mask1] * np.log2(bd1[mask1])
+    mask2 = bd2 > EPSILON
+    db[mask2] += bd2[mask2] * np.log2(bd2[mask2])
+
+    return db.tolist()
 
 
 def compute_psi3(
@@ -482,9 +532,9 @@ def _bias_phase(p: float, p0: float = PHASE_BIAS_CENTER) -> float:
     Returns:
         Phase angle in radians.
     """
-    deviation = float(np.clip(p - p0, -1.0, 1.0))
-    scaled = float(np.clip(deviation / p0, -1.0, 1.0))
-    return float(np.arcsin(scaled))
+    deviation = max(-1.0, min(p - p0, 1.0))
+    scaled = max(-1.0, min(deviation / p0, 1.0))
+    return math.asin(scaled)
 
 
 def compute_psi4(
@@ -516,16 +566,14 @@ def compute_psi4(
     if n < MIN_AGENTS_PSI4:
         return 0.0
 
-    # Clamp away from zero to prevent degenerate phases
-    clamped = [max(p, PROB_FLOOR) for p in probs]
-    phases = [_bias_phase(p) for p in clamped]
+    # Vectorized: clamp, compute phases, then pairwise via broadcasting
+    clamped = np.maximum(np.array(probs, dtype=np.float64), PROB_FLOOR)
+    phases = np.arcsin(np.clip((clamped - PHASE_BIAS_CENTER) / PHASE_BIAS_CENTER, -1.0, 1.0))
 
-    pairwise: List[float] = []
-    for i in range(n):
-        for j in range(i + 1, n):
-            cos_diff = np.cos(phases[i] - phases[j])
-            weight = np.sqrt(clamped[i] * clamped[j])
-            pairwise.append(float(cos_diff * weight))
+    i_idx, j_idx = np.triu_indices(n, k=1)
+    cos_diff = np.cos(phases[i_idx] - phases[j_idx])
+    weight = np.sqrt(clamped[i_idx] * clamped[j_idx])
+    pairwise = cos_diff * weight
 
     if len(pairwise) < 1:
         return 0.0
