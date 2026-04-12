@@ -153,6 +153,37 @@ def _validate_sequence(
     return arr
 
 
+def _coerce_list_to_conditionals(
+    data: list,
+) -> Dict[str, Dict[str, float]]:
+    """Convert a list-of-lists to the dict-of-dicts conditionals format.
+
+    Accepts [[p_true_0, p_false_0], [p_true_1, p_false_1], ...] and
+    returns {"outcome_0": {"p_given_a_true": ..., "p_given_a_false": ...}, ...}.
+
+    Raises:
+        TypeError: If elements are not 2-element sequences of numbers.
+    """
+    result: Dict[str, Dict[str, float]] = {}
+    for i, item in enumerate(data):
+        if not isinstance(item, (list, tuple)) or len(item) != 2:
+            raise TypeError(
+                f"conditionals[{i}] must be a [p_true, p_false] pair, "
+                f"got {type(item).__name__}. "
+                "Pass a dict for named outcomes: "
+                "{'cooperate': {'p_given_a_true': 0.8, 'p_given_a_false': 0.3}}"
+            )
+        result[f"outcome_{i}"] = {
+            "p_given_a_true": float(item[0]),
+            "p_given_a_false": float(item[1]),
+        }
+    logger.info(
+        "Converted list format to dict. For named outcomes, pass a dict: "
+        "{'cooperate': {'p_given_a_true': 0.8, 'p_given_a_false': 0.3}}"
+    )
+    return result
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # Ψ₁: INFORMATIONAL ENTROPY
 # Reference: Deng (2016), Chaos Solitons & Fractals, 91, 549-553.
@@ -270,6 +301,7 @@ def belief_degree_huang(
     p_a_true: float = 0.5,
     p_a_false: float = 0.5,
     n_unobserved: int = 1,
+    **kwargs,
 ) -> float:
     """Compute Huang Belief Degree (interference cos theta).
 
@@ -294,6 +326,15 @@ def belief_degree_huang(
 
     Reference: Huang et al. (2019), Lemma 4.1, Eq. 19.
     """
+    if "priors" in kwargs:
+        raise TypeError(
+            "Unknown argument 'priors'. "
+            "Use p_a_true=0.5, p_a_false=0.5 instead."
+        )
+    if kwargs:
+        raise TypeError(
+            f"Unexpected keyword arguments: {', '.join(kwargs.keys())}"
+        )
     if not outcomes:
         raise ValueError("outcomes must be non-empty")
     if not isinstance(outcomes, list):
@@ -311,6 +352,12 @@ def belief_degree_huang(
 
     belief_distances = []
     for outcome in outcomes:
+        if "priors" in outcome and "p_given_a_true" not in outcome:
+            priors = outcome["priors"]
+            outcome = {
+                "p_given_a_true": float(priors[0]),
+                "p_given_a_false": float(priors[1]),
+            }
         p_true = float(outcome.get("p_given_a_true", 0.5))
         p_false = float(outcome.get("p_given_a_false", 0.5))
         alpha, beta = _compute_amplitude_vectors(
@@ -337,6 +384,7 @@ def quantum_probability(
     p_a_true: float = 0.5,
     p_a_false: float = 0.5,
     n_unobserved: int = 1,
+    **kwargs,
 ) -> Dict[str, float]:
     """Compute quantum-like probabilities with Huang interference.
 
@@ -359,6 +407,17 @@ def quantum_probability(
     Raises:
         ValueError: If conditionals is empty or priors invalid.
     """
+    if "priors" in kwargs:
+        raise TypeError(
+            "Unknown argument 'priors'. "
+            "Use p_a_true=0.5, p_a_false=0.5 instead."
+        )
+    if kwargs:
+        raise TypeError(
+            f"Unexpected keyword arguments: {', '.join(kwargs.keys())}"
+        )
+    if isinstance(conditionals, list):
+        conditionals = _coerce_list_to_conditionals(conditionals)
     if not conditionals:
         raise ValueError("conditionals must be non-empty")
     p_a_true, p_a_false = _validate_probability_pair(p_a_true, p_a_false)
@@ -567,6 +626,10 @@ def compute_psi4(
 
     Raises:
         ValueError: If any probability is outside [0, 1].
+
+    Note:
+        There is no ``compute_psi4_from_conditionals`` — use
+        ``compute_psi4()`` with a list of per-agent probabilities.
     """
     # Batch validation: type-check then validate with numpy
     for i, p in enumerate(agent_probabilities):
@@ -665,6 +728,7 @@ def compute_psi_from_conditionals(
     conditionals: Dict[str, Dict[str, float]],
     p_a_true: float = 0.5,
     p_a_false: float = 0.5,
+    **kwargs,
 ) -> PsiProfile:
     """Compute Psi profile from QLBN conditional probabilities.
 
@@ -685,6 +749,17 @@ def compute_psi_from_conditionals(
     Raises:
         ValueError: If conditionals is empty or priors invalid.
     """
+    if "priors" in kwargs:
+        raise TypeError(
+            "Unknown argument 'priors'. "
+            "Use p_a_true=0.5, p_a_false=0.5 instead."
+        )
+    if kwargs:
+        raise TypeError(
+            f"Unexpected keyword arguments: {', '.join(kwargs.keys())}"
+        )
+    if isinstance(conditionals, list):
+        conditionals = _coerce_list_to_conditionals(conditionals)
     if not conditionals:
         raise ValueError("conditionals must be non-empty")
     p_a_true, p_a_false = _validate_probability_pair(p_a_true, p_a_false)
@@ -752,6 +827,278 @@ def cohens_d(
     if pooled_std < EPSILON:
         return 0.0
     return float((mean_a - mean_b) / pooled_std)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# USER-FRIENDLY API
+# Convenience functions for researchers encountering the library for
+# the first time. These delegate to the core functions above.
+# ═══════════════════════════════════════════════════════════════════════
+
+def _interpret_level(value: float, thresholds: List[Tuple[float, str]]) -> str:
+    """Return the interpretation string for the first threshold exceeded."""
+    for limit, label in thresholds:
+        if value < limit:
+            return label
+    return thresholds[-1][1]
+
+
+_PSI1_BANDS = [(1.0, "low uncertainty"), (3.0, "moderate uncertainty"), (float("inf"), "high uncertainty")]
+_PSI2_BANDS = [(0.3, "low interference (mechanical/predictable)"), (0.7, "moderate interference (natural)"), (float("inf"), "high interference (chaotic/volatile)")]
+_PSI3_BANDS = [(0.1, "stable (rigid/mechanical)"), (0.4, "moderate adaptation (natural decision-making)"), (float("inf"), "high adaptation (active mode transitions)")]
+_PSI4_BANDS = [(0.05, "strong consensus"), (0.2, "moderate agreement"), (float("inf"), "high divergence")]
+
+
+def summary(profile) -> str:
+    """Generate a plain-English interpretation of a Psi profile.
+
+    Accepts a PsiProfile or a dict with a 'profile' key (e.g., output
+    from quick_analyze).
+
+    Args:
+        profile: PsiProfile instance, or dict containing 'profile' key.
+
+    Returns:
+        Multi-line string with interpretation of each dimension.
+
+    Raises:
+        TypeError: If profile is not a PsiProfile or compatible dict.
+    """
+    if isinstance(profile, dict):
+        profile = profile.get("profile", profile)
+    if not isinstance(profile, PsiProfile):
+        raise TypeError(
+            f"Expected PsiProfile or dict with 'profile' key, "
+            f"got {type(profile).__name__}"
+        )
+    lines = [
+        f"Psi1 = {profile.psi_1:.4f}  ({_interpret_level(profile.psi_1, _PSI1_BANDS)})",
+        f"Psi2 = {profile.psi_2:.4f}  ({_interpret_level(profile.psi_2, _PSI2_BANDS)})",
+        f"Psi3 = {profile.psi_3:.4f}  ({_interpret_level(profile.psi_3, _PSI3_BANDS)})",
+        f"Psi4 = {profile.psi_4:.4f}  ({_interpret_level(profile.psi_4, _PSI4_BANDS)})",
+    ]
+    return "\n".join(lines)
+
+
+class ExampleData:
+    """Built-in sample datasets for immediate experimentation.
+
+    Access via the module-level ``examples`` instance::
+
+        from insight137_eap import examples
+        profile = compute_psi_from_conditionals(examples.prisoners_dilemma)
+    """
+
+    @property
+    def prisoners_dilemma(self) -> Dict[str, Dict[str, float]]:
+        """Average Prisoner's Dilemma conditionals from Huang et al. (2019) Table 2.
+
+        P(Defect|opponent defected)=0.87, P(Defect|opponent cooperated)=0.74.
+        """
+        return {
+            "defect": {"p_given_a_true": 0.87, "p_given_a_false": 0.74},
+            "cooperate": {"p_given_a_true": 0.13, "p_given_a_false": 0.26},
+        }
+
+    @property
+    def human_keystrokes(self) -> List[float]:
+        """50 realistic inter-keystroke intervals (ms) with natural variability.
+
+        Seeded RNG for reproducibility. Typical human range: 60-200ms.
+        """
+        rng = np.random.RandomState(42)
+        return [float(x) for x in rng.normal(120, 35, 50).clip(40, 250)]
+
+    @property
+    def bot_keystrokes(self) -> List[float]:
+        """50 near-constant inter-keystroke intervals (ms) simulating a bot.
+
+        Mechanical regularity with minimal jitter (std=1ms).
+        """
+        rng = np.random.RandomState(99)
+        return [float(x) for x in rng.normal(50, 1, 50).clip(45, 55)]
+
+    @property
+    def order_effects(self) -> Dict[str, Dict[str, float]]:
+        """Survey order-effect conditionals (Clinton-Gore style).
+
+        Demonstrates question-order interference in political surveys.
+        Based on Busemeyer & Bruza (2012, Ch. 9) reported patterns.
+        """
+        return {
+            "approve": {"p_given_a_true": 0.69, "p_given_a_false": 0.56},
+            "disapprove": {"p_given_a_true": 0.31, "p_given_a_false": 0.44},
+        }
+
+    @property
+    def multi_agent_diverse(self) -> List[float]:
+        """5 agents with diverse bypass decisions (high disagreement).
+
+        3 bypass (1.0), 2 comply (0.01). Psi4 should be high.
+        """
+        return [1.0, 1.0, 1.0, 0.01, 0.01]
+
+    @property
+    def multi_agent_consensus(self) -> List[float]:
+        """5 agents with near-identical decisions (consensus).
+
+        All comply with minor variation. Psi4 should be near zero.
+        """
+        return [0.05, 0.03, 0.04, 0.06, 0.02]
+
+
+examples = ExampleData()
+
+
+def quick_analyze(data, **kwargs) -> dict:
+    """Auto-detect input type and run the appropriate analysis.
+
+    Accepts:
+        - list/array of numbers -> compute_psi_from_sequence
+        - dict with outcome keys -> compute_psi_from_conditionals
+        - Otherwise raises TypeError with guidance
+
+    Args:
+        data: Input data (sequence, conditionals dict, or list-of-lists).
+        **kwargs: Passed through to the underlying function
+            (e.g., window_size, p_a_true, p_a_false, agent_decisions).
+
+    Returns:
+        Dict with keys:
+            'profile': PsiProfile,
+            'summary': str (plain-English interpretation),
+            'input_type': str ('sequence' or 'conditionals'),
+            'raw': dict of all computed values
+
+    Raises:
+        TypeError: If data format is not recognized.
+    """
+    # Dict with p_given_a_true values → conditionals
+    if isinstance(data, dict):
+        first_val = next(iter(data.values()), None)
+        if isinstance(first_val, dict) and "p_given_a_true" in first_val:
+            profile = compute_psi_from_conditionals(data, **kwargs)
+            return {
+                "profile": profile,
+                "summary": summary(profile),
+                "input_type": "conditionals",
+                "raw": profile.to_dict(),
+            }
+        raise TypeError(
+            "Dict values must be dicts with 'p_given_a_true' and "
+            "'p_given_a_false' keys."
+        )
+
+    # List/array of numbers → sequence
+    if isinstance(data, (list, tuple, np.ndarray)):
+        # Check if it looks like a list-of-lists (conditionals shorthand)
+        if (len(data) > 0
+                and isinstance(data[0], (list, tuple))
+                and len(data[0]) == 2):
+            conditionals = _coerce_list_to_conditionals(data)
+            profile = compute_psi_from_conditionals(conditionals, **kwargs)
+            return {
+                "profile": profile,
+                "summary": summary(profile),
+                "input_type": "conditionals",
+                "raw": profile.to_dict(),
+            }
+        # Extract agent_decisions from kwargs if present
+        agent_decisions = kwargs.pop("agent_decisions", None)
+        window_size = kwargs.pop("window_size", DEFAULT_WINDOW_SIZE)
+        if kwargs:
+            raise TypeError(
+                f"Unexpected keyword arguments: {', '.join(kwargs.keys())}"
+            )
+        profile = compute_psi_from_sequence(
+            data, window_size=window_size, agent_decisions=agent_decisions,
+        )
+        return {
+            "profile": profile,
+            "summary": summary(profile),
+            "input_type": "sequence",
+            "raw": profile.to_dict(),
+        }
+
+    raise TypeError(
+        f"Cannot analyze {type(data).__name__}. Accepted formats:\n"
+        "  - list/array of numbers: [10, 20, 30, 40]\n"
+        "  - dict of conditionals: {'outcome': {'p_given_a_true': 0.8, "
+        "'p_given_a_false': 0.3}}\n"
+        "  - list of [p_true, p_false] pairs: [[0.8, 0.2], [0.3, 0.7]]"
+    )
+
+
+def compare(
+    a,
+    b,
+    labels: Optional[Tuple[str, str]] = None,
+) -> dict:
+    """Compare two datasets and return a complete comparison.
+
+    Accepts two sequences (lists/arrays) or two conditional dicts.
+    Auto-detects input type using the same logic as quick_analyze.
+
+    Args:
+        a, b: Two sequences or two conditional dicts.
+        labels: Optional tuple of names, e.g. ("human", "bot").
+
+    Returns:
+        Dict with keys:
+            'profile_a': PsiProfile,
+            'profile_b': PsiProfile,
+            'differences': dict mapping each Ψ dimension to its
+                absolute difference,
+            'largest_difference': str (which Ψ dimension differs most),
+            'verdict': str (plain-English summary of comparison)
+    """
+    label_a = labels[0] if labels else "A"
+    label_b = labels[1] if labels else "B"
+
+    result_a = quick_analyze(a)
+    result_b = quick_analyze(b)
+    pa = result_a["profile"]
+    pb = result_b["profile"]
+
+    diffs = {
+        "psi_1": abs(pa.psi_1 - pb.psi_1),
+        "psi_2": abs(pa.psi_2 - pb.psi_2),
+        "psi_3": abs(pa.psi_3 - pb.psi_3),
+        "psi_4": abs(pa.psi_4 - pb.psi_4),
+    }
+
+    largest_key = max(diffs, key=diffs.get)
+    largest_val = diffs[largest_key]
+
+    if largest_val < 0.2:
+        magnitude = "negligible"
+    elif largest_val < 0.5:
+        magnitude = "small"
+    elif largest_val < 0.8:
+        magnitude = "medium"
+    else:
+        magnitude = "large"
+
+    dim_names = {
+        "psi_1": "informational entropy",
+        "psi_2": "behavioral interference",
+        "psi_3": "adaptive volatility",
+        "psi_4": "relational divergence",
+    }
+
+    verdict = (
+        f"{magnitude.capitalize()} difference between {label_a} and "
+        f"{label_b}. Largest gap: {largest_key} "
+        f"({dim_names[largest_key]}) differs by {largest_val:.4f}."
+    )
+
+    return {
+        "profile_a": pa,
+        "profile_b": pb,
+        "differences": diffs,
+        "largest_difference": largest_key,
+        "verdict": verdict,
+    }
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -869,9 +1216,29 @@ __all__ = [
     "compute_psi_from_conditionals",
     # Statistics
     "cohens_d",
+    # User-friendly API
+    "quick_analyze",
+    "compare",
+    "summary",
+    "ExampleData",
+    "examples",
     # Verification
     "verify_huang_paper",
 ]
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# MODULE-LEVEL ATTRIBUTE LOOKUP (helpful error for common mistakes)
+# ═══════════════════════════════════════════════════════════════════════
+
+def __getattr__(name: str):
+    if name == "compute_psi4_from_conditionals":
+        raise AttributeError(
+            "No function 'compute_psi4_from_conditionals'. "
+            "Use compute_psi4(agent_probabilities) instead. "
+            "Example: compute_psi4([0.9, 0.1, 0.7])"
+        )
+    raise AttributeError(f"module 'insight137_eap' has no attribute '{name}'")
 
 
 # ═══════════════════════════════════════════════════════════════════════
