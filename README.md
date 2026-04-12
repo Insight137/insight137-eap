@@ -114,6 +114,101 @@ results = verify_huang_paper()
 
 ---
 
+## Easy Start
+
+### 1. One-line analysis
+
+```python
+from insight137_eap import quick_analyze
+
+# Sequence data (message lengths, keystroke timings, etc.)
+result = quick_analyze([150, 200, 180, 350, 120, 400, 90, 250])
+print(result["summary"])
+```
+
+**Output:**
+```
+Psi1 = 2.8444  (moderate uncertainty)
+Psi2 = 0.3540  (moderate interference (natural))
+Psi3 = 0.4096  (high adaptation (active mode transitions))
+Psi4 = 0.0000  (strong consensus)
+```
+
+Works with conditionals too:
+
+```python
+from insight137_eap import quick_analyze, examples
+
+result = quick_analyze(examples.prisoners_dilemma)
+print(result["input_type"])  # "conditionals"
+print(result["summary"])
+```
+
+### 2. Built-in example datasets
+
+```python
+from insight137_eap import examples
+
+examples.prisoners_dilemma      # Huang et al. (2019) Table 2
+examples.human_keystrokes       # 50 realistic inter-keystroke intervals
+examples.bot_keystrokes         # 50 mechanical near-constant intervals
+examples.order_effects          # Survey order-effect conditionals
+examples.multi_agent_diverse    # 5 agents, high disagreement
+examples.multi_agent_consensus  # 5 agents, near-identical decisions
+```
+
+### 3. Compare two datasets
+
+```python
+from insight137_eap import compare, examples
+
+result = compare(
+    examples.human_keystrokes,
+    examples.bot_keystrokes,
+    labels=("human", "bot"),
+)
+print(result["verdict"])
+# Small difference between human and bot. Largest gap: psi_2
+# (behavioral interference) differs by 0.3187.
+```
+
+### 4. Human-readable summary
+
+```python
+from insight137_eap import compute_psi_from_sequence, summary
+
+profile = compute_psi_from_sequence([150, 200, 180, 350, 120, 400, 90, 250])
+print(summary(profile))
+```
+
+### 5. Flexible input formats
+
+Both formats work — use whichever is more natural:
+
+```python
+from insight137_eap import quantum_probability
+
+# Dict-of-dicts (named outcomes)
+quantum_probability({
+    "defect": {"p_given_a_true": 0.87, "p_given_a_false": 0.74},
+    "cooperate": {"p_given_a_true": 0.13, "p_given_a_false": 0.26},
+})
+
+# List-of-lists (auto-converted)
+quantum_probability([[0.87, 0.74], [0.13, 0.26]])
+```
+
+### 6. Helpful error messages
+
+Common mistakes produce guidance, not cryptic tracebacks:
+
+```python
+quantum_probability(data, priors=[0.5, 0.5])
+# TypeError: Unknown argument 'priors'. Use p_a_true=0.5, p_a_false=0.5 instead.
+```
+
+---
+
 ## Use Cases
 
 ### AI Safety: Monitor agents for behavioral transitions
