@@ -1102,6 +1102,338 @@ def compare(
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# VISUALIZATION
+# Optional matplotlib integration. All functions lazy-import so the
+# library works without matplotlib installed.
+# ═══════════════════════════════════════════════════════════════════════
+
+_TEAL = "#4fc4c0"
+_AMBER = "#f59e0b"
+_DIM_LABELS = ["Psi1", "Psi2", "Psi3", "Psi4"]
+
+
+def _resolve_profile(data) -> "PsiProfile":
+    """Convert various inputs to a PsiProfile."""
+    if isinstance(data, PsiProfile):
+        return data
+    if isinstance(data, dict):
+        p = data.get("profile", data)
+        if isinstance(p, PsiProfile):
+            return p
+    result = quick_analyze(data)
+    return result["profile"]
+
+
+def _get_psi_values(profile: "PsiProfile") -> List[float]:
+    """Extract [psi_1, psi_2, psi_3, psi_4] from a profile."""
+    return [profile.psi_1, profile.psi_2, profile.psi_3, profile.psi_4]
+
+
+def plot(profile, title=None, save_path=None, show=True):
+    """Plot a 4-axis radar chart of a Psi profile.
+
+    Args:
+        profile: PsiProfile, dict from quick_analyze(), or raw data.
+        title: Optional chart title.
+        save_path: If provided, save as PNG/PDF (detected from extension).
+        show: If True, call plt.show().
+
+    Requires matplotlib (optional dependency).
+
+    Raises:
+        ImportError: If matplotlib is not installed.
+    """
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        raise ImportError(
+            "matplotlib is required for plotting. "
+            "Install with: pip install matplotlib"
+        )
+
+    p = _resolve_profile(profile)
+    values = _get_psi_values(p)
+    values_closed = values + [values[0]]
+
+    angles = [n / 4.0 * 2.0 * math.pi for n in range(4)]
+    angles += angles[:1]
+
+    fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+    ax.set_theta_offset(math.pi / 2)
+    ax.set_theta_direction(-1)
+
+    labels = [f"{name}\n{val:.4f}" for name, val in zip(_DIM_LABELS, values)]
+    ax.set_thetagrids([a * 180 / math.pi for a in angles[:-1]], labels)
+
+    ax.plot(angles, values_closed, color=_TEAL, linewidth=2)
+    ax.fill(angles, values_closed, color=_TEAL, alpha=0.25)
+
+    ax.spines["polar"].set_visible(False)
+    ax.set_title(title or "Psi Profile", pad=20, fontsize=14)
+
+    plt.tight_layout()
+    if save_path:
+        fig.savefig(save_path, dpi=150, bbox_inches="tight")
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
+    return fig
+
+
+def plot_compare(a, b, labels=None, title=None, save_path=None, show=True):
+    """Overlay two Psi profiles on one radar chart for comparison.
+
+    Args:
+        a, b: PsiProfiles, sequences, or conditional dicts.
+        labels: Tuple of names, e.g. ("Human", "Bot").
+        title: Optional chart title.
+        save_path: If provided, save as PNG/PDF.
+        show: If True, call plt.show().
+
+    Requires matplotlib (optional dependency).
+    """
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        raise ImportError(
+            "matplotlib is required for plotting. "
+            "Install with: pip install matplotlib"
+        )
+
+    pa = _resolve_profile(a)
+    pb = _resolve_profile(b)
+    label_a = labels[0] if labels else "A"
+    label_b = labels[1] if labels else "B"
+
+    vals_a = _get_psi_values(pa)
+    vals_b = _get_psi_values(pb)
+    vals_a_closed = vals_a + [vals_a[0]]
+    vals_b_closed = vals_b + [vals_b[0]]
+
+    angles = [n / 4.0 * 2.0 * math.pi for n in range(4)]
+    angles += angles[:1]
+
+    fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+    ax.set_theta_offset(math.pi / 2)
+    ax.set_theta_direction(-1)
+    ax.set_thetagrids(
+        [a_ * 180 / math.pi for a_ in angles[:-1]], _DIM_LABELS,
+    )
+
+    ax.plot(angles, vals_a_closed, color=_TEAL, linewidth=2, label=label_a)
+    ax.fill(angles, vals_a_closed, color=_TEAL, alpha=0.25)
+    ax.plot(angles, vals_b_closed, color=_AMBER, linewidth=2, label=label_b)
+    ax.fill(angles, vals_b_closed, color=_AMBER, alpha=0.25)
+
+    ax.spines["polar"].set_visible(False)
+    ax.legend(loc="upper right", bbox_to_anchor=(1.15, 1.1))
+
+    comp = compare(a, b, labels=labels)
+    ax.set_title(title or "Psi Profile Comparison", pad=20, fontsize=14)
+    fig.text(
+        0.5, 0.02, comp["verdict"],
+        ha="center", fontsize=10, style="italic",
+    )
+
+    plt.tight_layout()
+    if save_path:
+        fig.savefig(save_path, dpi=150, bbox_inches="tight")
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
+    return fig
+
+
+def plot_dimensions(a, b, labels=None, title=None, save_path=None, show=True):
+    """Bar chart comparing each Psi dimension side by side.
+
+    More readable than radar for publications. Shows each dimension
+    as a grouped bar with values above bars.
+
+    Args:
+        a, b: PsiProfiles, sequences, or conditional dicts.
+        labels: Tuple of names, e.g. ("Human", "Bot").
+        title: Optional chart title.
+        save_path: If provided, save as PNG/PDF.
+        show: If True, call plt.show().
+
+    Requires matplotlib (optional dependency).
+    """
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        raise ImportError(
+            "matplotlib is required for plotting. "
+            "Install with: pip install matplotlib"
+        )
+
+    pa = _resolve_profile(a)
+    pb = _resolve_profile(b)
+    label_a = labels[0] if labels else "A"
+    label_b = labels[1] if labels else "B"
+
+    vals_a = _get_psi_values(pa)
+    vals_b = _get_psi_values(pb)
+
+    x = np.arange(4)
+    width = 0.35
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    bars_a = ax.bar(x - width / 2, vals_a, width, label=label_a, color=_TEAL)
+    bars_b = ax.bar(x + width / 2, vals_b, width, label=label_b, color=_AMBER)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(_DIM_LABELS)
+    ax.set_ylabel("Value")
+    ax.set_title(title or "Psi Dimension Comparison", fontsize=14)
+    ax.legend()
+
+    for bar in bars_a:
+        ax.text(
+            bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.02,
+            f"{bar.get_height():.3f}", ha="center", va="bottom", fontsize=9,
+        )
+    for bar in bars_b:
+        ax.text(
+            bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.02,
+            f"{bar.get_height():.3f}", ha="center", va="bottom", fontsize=9,
+        )
+
+    plt.tight_layout()
+    if save_path:
+        fig.savefig(save_path, dpi=150, bbox_inches="tight")
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
+    return fig
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# EXPORT / INTEROPERABILITY
+# CSV, JSON (stdlib), and MATLAB .mat (optional scipy).
+# ═══════════════════════════════════════════════════════════════════════
+
+def _profiles_to_rows(
+    profiles, labels: Optional[List[str]] = None,
+) -> List[dict]:
+    """Convert one or more PsiProfiles to a list of row dicts."""
+    if isinstance(profiles, PsiProfile):
+        profiles = [profiles]
+    if labels is None:
+        labels = [f"profile_{i}" for i in range(len(profiles))]
+    rows = []
+    for label, p in zip(labels, profiles):
+        d = p.to_dict()
+        d["label"] = label
+        rows.append(d)
+    return rows
+
+
+def to_csv(
+    profiles, path: str, labels: Optional[List[str]] = None,
+) -> None:
+    """Export PsiProfiles to CSV.
+
+    CSV format compatible with MATLAB readtable(), R read.csv(),
+    Excel, and pandas.
+
+    Args:
+        profiles: Single PsiProfile or list of PsiProfiles.
+        path: Output file path (.csv).
+        labels: Optional list of row labels.
+
+    Columns: label, psi_1, psi_2, psi_3, psi_4, belief_degree, method
+    """
+    import csv
+
+    rows = _profiles_to_rows(profiles, labels)
+    fieldnames = [
+        "label", "psi_1", "psi_2", "psi_3", "psi_4",
+        "belief_degree", "method",
+    ]
+    with open(path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+    logger.info("Wrote %d profiles to %s", len(rows), path)
+
+
+def to_json(
+    profiles,
+    path: Optional[str] = None,
+    labels: Optional[List[str]] = None,
+) -> Optional[str]:
+    """Export PsiProfiles to JSON.
+
+    JSON format compatible with MATLAB jsondecode(), R jsonlite,
+    and JavaScript.
+
+    Args:
+        profiles: Single PsiProfile or list of PsiProfiles.
+        path: If provided, write to file. If None, return JSON string.
+        labels: Optional list of labels.
+
+    Returns:
+        JSON string if path is None, otherwise None.
+    """
+    import json as _json
+
+    rows = _profiles_to_rows(profiles, labels)
+    text = _json.dumps(rows, indent=2)
+    if path is not None:
+        with open(path, "w") as f:
+            f.write(text)
+        logger.info("Wrote %d profiles to %s", len(rows), path)
+        return None
+    return text
+
+
+def to_matlab(
+    profiles,
+    path: str,
+    labels: Optional[List[str]] = None,
+) -> None:
+    """Export PsiProfiles to MATLAB-compatible .mat file.
+
+    Creates a .mat file loadable with MATLAB's load() command.
+    Variables: psi_1, psi_2, psi_3, psi_4, belief_degree (each as
+    arrays), plus labels as a cell array of strings.
+
+    Args:
+        profiles: Single PsiProfile or list of PsiProfiles.
+        path: Output file path (.mat).
+        labels: Optional list of labels.
+
+    Requires scipy (optional dependency).
+
+    Raises:
+        ImportError: If scipy is not installed.
+    """
+    try:
+        from scipy.io import savemat
+    except ImportError:
+        raise ImportError(
+            "scipy is required for MATLAB export. "
+            "Install with: pip install scipy"
+        )
+
+    rows = _profiles_to_rows(profiles, labels)
+    mat_dict = {
+        "psi_1": np.array([r["psi_1"] for r in rows]),
+        "psi_2": np.array([r["psi_2"] for r in rows]),
+        "psi_3": np.array([r["psi_3"] for r in rows]),
+        "psi_4": np.array([r["psi_4"] for r in rows]),
+        "belief_degree": np.array([r["belief_degree"] for r in rows]),
+        "labels": np.array([r["label"] for r in rows], dtype=object),
+    }
+    savemat(path, mat_dict)
+    logger.info("Wrote %d profiles to %s", len(rows), path)
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # BUILT-IN VERIFICATION
 # Validates implementation against published results.
 # ═══════════════════════════════════════════════════════════════════════
@@ -1222,6 +1554,14 @@ __all__ = [
     "summary",
     "ExampleData",
     "examples",
+    # Visualization (requires matplotlib)
+    "plot",
+    "plot_compare",
+    "plot_dimensions",
+    # Export / Interoperability
+    "to_csv",
+    "to_json",
+    "to_matlab",
     # Verification
     "verify_huang_paper",
 ]
