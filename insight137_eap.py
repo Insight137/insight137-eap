@@ -27,7 +27,7 @@ import math
 from functools import lru_cache
 import numpy as np
 from typing import Dict, List, Tuple, Optional, Sequence, Union
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 import logging
 
@@ -76,7 +76,7 @@ class PsiProfile:
     belief_degree: float = 0.0
     method: str = PsiMethod.HUANG_2019.value
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> Dict[str, Union[float, str]]:
         """Serialize to dictionary for JSON/API responses."""
         return {
             "psi_1": round(self.psi_1, 6),
@@ -116,7 +116,7 @@ class ConditionalProbability:
 
 def _validate_probability(value: float, name: str) -> float:
     """Validate and clamp a probability value to [0, 1]."""
-    if not isinstance(value, (int, float)):
+    if not isinstance(value, (int, float, np.integer, np.floating)):
         raise TypeError(f"{name} must be numeric, got {type(value).__name__}")
     if math.isnan(value) or math.isinf(value):
         raise ValueError(f"{name} must be finite, got {value}")
@@ -296,6 +296,15 @@ def belief_degree_huang(
     """
     if not outcomes:
         raise ValueError("outcomes must be non-empty")
+    if not isinstance(outcomes, list):
+        raise TypeError(
+            f"outcomes must be a list of dicts, got {type(outcomes).__name__}"
+        )
+    for i, item in enumerate(outcomes):
+        if not isinstance(item, dict):
+            raise TypeError(
+                f"outcomes[{i}] must be a dict, got {type(item).__name__}"
+            )
     p_a_true, p_a_false = _validate_probability_pair(p_a_true, p_a_false)
     if n_unobserved < 1:
         raise ValueError(f"n_unobserved must be >= 1, got {n_unobserved}")
@@ -383,6 +392,10 @@ def quantum_probability(
                 cond["p_given_a_false"] * p_a_false
             )
         fb_total = sum(fallback.values())
+        if fb_total <= 0:
+            raise ValueError(
+                "Total classical probability is zero — cannot compute fallback"
+            )
         return {k: v / fb_total for k, v in fallback.items()}
 
     return {k: v / total for k, v in raw_probs.items()}
@@ -525,24 +538,6 @@ def compute_psi3(
 #            Computing, 118, 108528.
 # ═══════════════════════════════════════════════════════════════════════
 
-def _bias_phase(p: float, p0: float = PHASE_BIAS_CENTER) -> float:
-    """Map a probability to a bias phase angle.
-
-    Adapted from the BEQBN phase parameter (Meghdadi et al., 2022).
-    Maps deviation from center probability to [-pi/2, pi/2] via arcsin.
-
-    Args:
-        p: Probability value in [0, 1].
-        p0: Center probability (default: 0.5).
-
-    Returns:
-        Phase angle in radians.
-    """
-    deviation = max(-1.0, min(p - p0, 1.0))
-    scaled = max(-1.0, min(deviation / p0, 1.0))
-    return math.asin(scaled)
-
-
 @lru_cache(maxsize=64)
 def _triu_indices_cached(n: int) -> Tuple[np.ndarray, np.ndarray]:
     """Cached upper-triangle indices for pairwise computation."""
@@ -575,7 +570,7 @@ def compute_psi4(
     """
     # Batch validation: type-check then validate with numpy
     for i, p in enumerate(agent_probabilities):
-        if not isinstance(p, (int, float)):
+        if not isinstance(p, (int, float, np.integer, np.floating)):
             raise TypeError(f"agent_{i} must be numeric, got {type(p).__name__}")
     arr = np.asarray(agent_probabilities, dtype=np.float64)
     if not np.all(np.isfinite(arr)):
@@ -858,7 +853,6 @@ __all__ = [
     # Data structures
     "PsiProfile",
     "PsiMethod",
-    "ConditionalProbability",
     "VerificationError",
     # Ψ₁: Informational Entropy
     "deng_entropy",

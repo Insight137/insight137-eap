@@ -12,6 +12,9 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Hypothesis test database (machine-generated)
+.hypothesis/
+
 # Never commit raw research datasets
 *.dat
 *.raw

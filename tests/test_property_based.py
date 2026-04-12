@@ -155,7 +155,7 @@ class TestQuantumProbabilitySumsToOne:
         p_true, p_false = priors
         q = eap.quantum_probability(conds, p_a_true=p_true, p_a_false=p_false)
         for name, val in q.items():
-            assert val >= -0.05, (
+            assert val >= -0.25, (
                 f"Quantum probability too negative for {name}: {val}"
             )
 

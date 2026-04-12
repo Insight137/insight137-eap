@@ -1,157 +1,157 @@
 {
   "latency_psi_seq_10": {
-    "mean_us": 70.36662420455215,
-    "std_us": 18.37180459767448,
-    "min_us": 49.80002995580435,
-    "max_us": 345.1000084169209,
-    "n_iter": 7062,
-    "calls_per_sec": 14211.282853260824
+    "mean_us": 74.7472433723365,
+    "std_us": 30.4814442214602,
+    "min_us": 54.0000619366765,
+    "max_us": 545.2999612316489,
+    "n_iter": 6657,
+    "calls_per_sec": 13378.419790262044
   },
   "latency_psi_seq_100": {
-    "mean_us": 72.46854775219884,
-    "std_us": 25.583699428314073,
-    "min_us": 56.299963034689426,
-    "max_us": 552.1000130102038,
-    "n_iter": 2906,
-    "calls_per_sec": 13799.089826105394
+    "mean_us": 81.59445536753553,
+    "std_us": 34.83479968701607,
+    "min_us": 58.49997978657484,
+    "max_us": 654.7999801114202,
+    "n_iter": 5681,
+    "calls_per_sec": 12255.734724811657
   },
   "latency_psi_seq_1000": {
-    "mean_us": 123.47786490402142,
-    "std_us": 33.57175475798932,
-    "min_us": 91.29999671131372,
-    "max_us": 829.3999708257616,
-    "n_iter": 3831,
-    "calls_per_sec": 8098.617519644463
+    "mean_us": 136.11376447132295,
+    "std_us": 50.66174848956239,
+    "min_us": 99.59994349628687,
+    "max_us": 831.6999301314354,
+    "n_iter": 2441,
+    "calls_per_sec": 7346.7955565264265
   },
   "latency_psi_seq_10000": {
-    "mean_us": 1005.319157664321,
-    "std_us": 123.89987685470263,
-    "min_us": 800.7000433281064,
-    "max_us": 1721.800013910979,
-    "n_iter": 475,
-    "calls_per_sec": 994.708986072961
+    "mean_us": 1143.8372906633695,
+    "std_us": 289.3926623008933,
+    "min_us": 786.6000523790717,
+    "max_us": 2730.6999545544386,
+    "n_iter": 421,
+    "calls_per_sec": 874.2502173714315
   },
   "latency_psi_cond_2": {
-    "mean_us": 14.053625092591234,
-    "std_us": 5.485201681180579,
-    "min_us": 10.999967344105244,
-    "max_us": 260.6999478302896,
-    "n_iter": 26454,
-    "calls_per_sec": 71156.0179961808
+    "mean_us": 14.251062291418505,
+    "std_us": 7.891043655873398,
+    "min_us": 10.09996049106121,
+    "max_us": 309.599912725389,
+    "n_iter": 26595,
+    "calls_per_sec": 70170.20763442774
   },
   "latency_psi_cond_10": {
-    "mean_us": 22.41806968193152,
-    "std_us": 8.953752598953624,
-    "min_us": 16.600009985268116,
-    "max_us": 273.4000445343554,
-    "n_iter": 14577,
-    "calls_per_sec": 44606.87357065262
+    "mean_us": 26.169882392362588,
+    "std_us": 36.931820513286475,
+    "min_us": 16.80001150816679,
+    "max_us": 4375.3000209107995,
+    "n_iter": 16077,
+    "calls_per_sec": 38211.86450160891
   },
   "latency_psi4_11": {
-    "mean_us": 19.22471762360489,
-    "std_us": 11.240208679632628,
-    "min_us": 13.899989426136017,
-    "max_us": 361.79996095597744,
-    "n_iter": 17793,
-    "calls_per_sec": 52016.368696732345
+    "mean_us": 20.13490107416173,
+    "std_us": 11.49074915703248,
+    "min_us": 14.999997802078724,
+    "max_us": 338.50001636892557,
+    "n_iter": 16501,
+    "calls_per_sec": 49665.006861308
   },
   "latency_psi4_100": {
-    "mean_us": 73.14947541822666,
-    "std_us": 19.99628793732161,
-    "min_us": 53.099996875971556,
-    "max_us": 467.40000834688544,
-    "n_iter": 6195,
-    "calls_per_sec": 13670.638022796127
+    "mean_us": 86.13087477729701,
+    "std_us": 34.465883491293305,
+    "min_us": 59.29998587816954,
+    "max_us": 552.5000160560012,
+    "n_iter": 5924,
+    "calls_per_sec": 11610.238518831195
   },
   "latency_verify_huang": {
-    "mean_us": 33.6661471859553,
-    "std_us": 9.06282649485026,
-    "min_us": 27.59997732937336,
-    "max_us": 278.99997076019645,
-    "n_iter": 4363,
-    "calls_per_sec": 29703.428624501936
+    "mean_us": 36.12417555412333,
+    "std_us": 20.770973514689047,
+    "min_us": 24.499953724443913,
+    "max_us": 513.0000645294785,
+    "n_iter": 5154,
+    "calls_per_sec": 27682.292665800553
   },
   "throughput_psi_seq_100": {
-    "mean_us": 74.67279681570805,
-    "std_us": 15.68509510674438,
-    "min_us": 57.20002809539437,
-    "max_us": 345.20000917837024,
-    "n_iter": 5617,
-    "calls_per_sec": 13391.757676734582
+    "mean_us": 77.82109694115275,
+    "std_us": 25.11098607523017,
+    "min_us": 59.1999851167202,
+    "max_us": 528.0999466776848,
+    "n_iter": 5015,
+    "calls_per_sec": 12849.985920349933
   },
   "throughput_quantum_prob": {
-    "mean_us": 4.983341977931559,
-    "std_us": 1.9852946638710276,
-    "min_us": 3.7999707274138927,
-    "max_us": 163.30002108588815,
+    "mean_us": 5.541065945290029,
+    "std_us": 3.57864373827795,
+    "min_us": 3.9999140426516533,
+    "max_us": 264.80003725737333,
     "n_iter": 50000,
-    "calls_per_sec": 200668.5482209413
+    "calls_per_sec": 180470.6909958384
   },
   "throughput_belief_degree": {
-    "mean_us": 2.827654022257775,
-    "std_us": 2.0339588459626343,
-    "min_us": 2.100015990436077,
-    "max_us": 179.90003107115626,
+    "mean_us": 2.9371659830212593,
+    "std_us": 2.1856729170790574,
+    "min_us": 2.299901098012924,
+    "max_us": 190.29993563890457,
     "n_iter": 50000,
-    "calls_per_sec": 353650.05482585094
+    "calls_per_sec": 340464.2453918689
   },
   "scaling_10": {
-    "mean_us": 75.4653677276061,
-    "std_us": 30.27382601068039,
-    "min_us": 52.69999383017421,
-    "max_us": 519.900000654161,
-    "n_iter": 4516,
-    "calls_per_sec": 13251.111471549732
+    "mean_us": 72.9742053735803,
+    "std_us": 25.515231836813026,
+    "min_us": 54.999953135848045,
+    "max_us": 592.5999721512198,
+    "n_iter": 5319,
+    "calls_per_sec": 13703.472273259471
   },
   "scaling_50": {
-    "mean_us": 76.33128299509619,
-    "std_us": 25.67114929787548,
-    "min_us": 53.70000144466758,
-    "max_us": 549.9999970197678,
-    "n_iter": 2276,
-    "calls_per_sec": 13100.788572677913
+    "mean_us": 84.72068969301075,
+    "std_us": 39.14849663232568,
+    "min_us": 58.3999790251255,
+    "max_us": 508.10002721846104,
+    "n_iter": 5452,
+    "calls_per_sec": 11803.492200353245
   },
   "scaling_100": {
-    "mean_us": 72.21797747146826,
-    "std_us": 18.697961823519275,
-    "min_us": 57.09996912628412,
-    "max_us": 762.3000419698656,
-    "n_iter": 6675,
-    "calls_per_sec": 13846.967680520796
+    "mean_us": 78.75205089709087,
+    "std_us": 28.1782945481981,
+    "min_us": 57.999975979328156,
+    "max_us": 394.5999778807163,
+    "n_iter": 5827,
+    "calls_per_sec": 12698.082000515118
   },
   "scaling_500": {
-    "mean_us": 98.23449382797801,
-    "std_us": 25.77362697465748,
-    "min_us": 73.69997911155224,
-    "max_us": 522.2000181674957,
-    "n_iter": 4366,
-    "calls_per_sec": 10179.72364932359
+    "mean_us": 98.9097327327294,
+    "std_us": 38.26414108078567,
+    "min_us": 72.4999699741602,
+    "max_us": 592.4999713897705,
+    "n_iter": 4336,
+    "calls_per_sec": 10110.228512113837
   },
   "scaling_1000": {
-    "mean_us": 124.92301451461037,
-    "std_us": 31.196488525708126,
-    "min_us": 92.50000584870577,
-    "max_us": 652.6000215671957,
-    "n_iter": 3563,
-    "calls_per_sec": 8004.930107438649
+    "mean_us": 132.7963822668067,
+    "std_us": 45.739105959867445,
+    "min_us": 99.10005610436201,
+    "max_us": 716.1000976338983,
+    "n_iter": 1548,
+    "calls_per_sec": 7530.325622808449
   },
   "scaling_5000": {
-    "mean_us": 319.15552079037116,
-    "std_us": 59.70190545355764,
-    "min_us": 233.90003480017185,
-    "max_us": 696.2000043131411,
-    "n_iter": 1585,
-    "calls_per_sec": 3133.2686883296105
+    "mean_us": 331.2254269664412,
+    "std_us": 62.46315011766994,
+    "min_us": 271.7999741435051,
+    "max_us": 841.1000017076731,
+    "n_iter": 1404,
+    "calls_per_sec": 3019.091889045454
   },
   "scaling_10000": {
-    "mean_us": 1129.1816000593826,
-    "std_us": 186.78782525171127,
-    "min_us": 858.3000162616372,
-    "max_us": 2525.299962144345,
-    "n_iter": 500,
-    "calls_per_sec": 885.5971439380618
+    "mean_us": 1138.751897916693,
+    "std_us": 226.85705737431334,
+    "min_us": 852.3999713361263,
+    "max_us": 2705.8999985456467,
+    "n_iter": 316,
+    "calls_per_sec": 878.1544090766963
   },
-  "scaling_slope": 0.34952208060760814,
+  "scaling_slope": 0.3488773460514811,
   "scaling_complexity": "O(n)",
   "threshold_100ms": ">100,000",
   "threshold_1s": ">500,000",
@@ -160,58 +160,58 @@
     "peak_kb": 1753.5634765625
   },
   "memory_1000x100_seq": {
-    "current_kb": 12.21484375,
-    "peak_kb": 32.580078125
+    "current_kb": 14.173828125,
+    "peak_kb": 34.5966796875
   },
   "memory_leak_check": {
-    "total_diff_kb": 2.1142578125,
+    "total_diff_kb": 1.794921875,
     "top_allocations": [
       {
-        "file": "C:\\Code-Workspace\\insight137-eap\\tests\\test_performance.py:353",
+        "file": "C:\\Code-Workspace\\insight137-eap\\.claude\\worktrees\\cool-meninsky\\tests\\test_performance.py:353",
         "size_diff_kb": 0.875
       },
       {
-        "file": "C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py:54",
-        "size_diff_kb": 0.4033203125
-      },
-      {
         "file": "C:\\Program Files\\Python311\\Lib\\tracemalloc.py:560",
-        "size_diff_kb": 0.3125
+        "size_diff_kb": 0.296875
       },
       {
         "file": "C:\\Program Files\\Python311\\Lib\\tracemalloc.py:423",
-        "size_diff_kb": 0.3125
+        "size_diff_kb": 0.296875
       },
       {
-        "file": "C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:411",
+        "file": "C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py:54",
+        "size_diff_kb": 0.115234375
+      },
+      {
+        "file": "C:\\Code-Workspace\\insight137-eap\\.claude\\worktrees\\cool-meninsky\\insight137_eap.py:424",
         "size_diff_kb": 0.09375
       }
     ]
   },
   "vec_vs_loop": {
-    "vectorized_mean_us": 67.88380048237741,
-    "loop_mean_us": 2646.0629995563067,
-    "speedup": 38.97929963781599
+    "vectorized_mean_us": 61.170598957687616,
+    "loop_mean_us": 2971.2844995083287,
+    "speedup": 48.57373558764071
   },
   "cprofile_hotspots": {
     "top_3_hotspots": [
       {
         "ncalls": "1000",
-        "tottime": "0.023",
-        "function": "C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:425(_compute_sliding_interferences)"
+        "tottime": "0.026",
+        "function": "C:\\Code-Workspace\\insight137-eap\\.claude\\worktrees\\cool-meninsky\\insight137_eap.py:438(_compute_sliding_interferences)"
       },
       {
         "ncalls": "2000",
-        "tottime": "0.022",
-        "function": "C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:403(_belief_distance_vec)"
+        "tottime": "0.025",
+        "function": "C:\\Code-Workspace\\insight137-eap\\.claude\\worktrees\\cool-meninsky\\insight137_eap.py:416(_belief_distance_vec)"
       },
       {
         "ncalls": "2000",
-        "tottime": "0.014",
+        "tottime": "0.015",
         "function": "Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:148(_var)"
       }
     ],
-    "full_profile": "         166001 function calls in 0.149 seconds\n\n   Ordered by: internal time\n   List reduced from 53 to 15 due to restriction <15>\n\n   ncalls  tottime  percall  cumtime  percall filename:lineno(function)\n     1000    0.023    0.000    0.066    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:425(_compute_sliding_interferences)\n     2000    0.022    0.000    0.029    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:403(_belief_distance_vec)\n     2000    0.014    0.000    0.021    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:148(_var)\n     1000    0.011    0.000    0.034    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:552(compute_psi4)\n    11000    0.011    0.000    0.011    0.000 {method 'reduce' of 'numpy.ufunc' objects}\n     6000    0.007    0.000    0.007    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:96(_clip)\n     1000    0.007    0.000    0.149    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:606(compute_psi_from_sequence)\n     1000    0.006    0.000    0.013    0.000 C:\\Code-Workspace\\insight137-eap\\insight137_eap.py:199(shannon_entropy)\n     6000    0.004    0.000    0.016    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py:2207(clip)\n     4000    0.004    0.000    0.010    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py:86(_wrapreduction_any_all)\n     3000    0.004    0.000    0.004    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:73(_count_reduce_items)\n     8000    0.004    0.000    0.015    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py:48(_wrapfunc)\n     2000    0.003    0.000    0.024    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:217(_std)\n     1000    0.003    0.000    0.006    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:115(_mean)\n     5000    0.002    0.000    0.002    0.0"
+    "full_profile": "         166001 function calls in 0.171 seconds\n\n   Ordered by: internal time\n   List reduced from 53 to 15 due to restriction <15>\n\n   ncalls  tottime  percall  cumtime  percall filename:lineno(function)\n     1000    0.026    0.000    0.075    0.000 C:\\Code-Workspace\\insight137-eap\\.claude\\worktrees\\cool-meninsky\\insight137_eap.py:438(_compute_sliding_interferences)\n     2000    0.025    0.000    0.032    0.000 C:\\Code-Workspace\\insight137-eap\\.claude\\worktrees\\cool-meninsky\\insight137_eap.py:416(_belief_distance_vec)\n     2000    0.015    0.000    0.025    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:148(_var)\n    11000    0.013    0.000    0.013    0.000 {method 'reduce' of 'numpy.ufunc' objects}\n     1000    0.013    0.000    0.040    0.000 C:\\Code-Workspace\\insight137-eap\\.claude\\worktrees\\cool-meninsky\\insight137_eap.py:547(compute_psi4)\n     1000    0.008    0.000    0.171    0.000 C:\\Code-Workspace\\insight137-eap\\.claude\\worktrees\\cool-meninsky\\insight137_eap.py:601(compute_psi_from_sequence)\n     6000    0.007    0.000    0.007    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:96(_clip)\n     1000    0.006    0.000    0.015    0.000 C:\\Code-Workspace\\insight137-eap\\.claude\\worktrees\\cool-meninsky\\insight137_eap.py:199(shannon_entropy)\n     6000    0.005    0.000    0.018    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py:2207(clip)\n     4000    0.005    0.000    0.012    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py:86(_wrapreduction_any_all)\n     3000    0.005    0.000    0.005    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:73(_count_reduce_items)\n     8000    0.004    0.000    0.017    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py:48(_wrapfunc)\n     2000    0.003    0.000    0.028    0.000 C:\\Program Files\\Python311\\Lib\\site-packages\\numpy\\_core\\_methods.py:217(_std)\n     1000"
   },
   "optimization_suggestions": [
     "1. _belief_distance_vec: Already vectorized. Further gains possible via Cython/Numba JIT compilation of the inner np.where logic.",

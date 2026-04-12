@@ -68,7 +68,7 @@ print(f"Belief Degree (Db): {profile.belief_degree:.4f}")
 
 **Output:**
 ```
-Psi1: 0.9957
+Psi1: 0.7118
 Psi2: 0.9421
 Belief Degree (Db): -0.9421
 ```
@@ -220,8 +220,8 @@ bot_typing    = [50, 50, 51, 50, 50, 49, 50, 51, 50, 50]
 human_profile = compute_psi_from_sequence(human_typing)
 bot_profile   = compute_psi_from_sequence(bot_typing)
 
-print(f"Human Psi2: {human_profile.psi_2:.4f}  (higher — natural variability)")
-print(f"Bot   Psi2: {bot_profile.psi_2:.4f}  (lower — mechanical regularity)")
+print(f"Human Psi3: {human_profile.psi_3:.4f}  (higher — volatile, natural pattern)")
+print(f"Bot   Psi3: {bot_profile.psi_3:.4f}  (lower — mechanical regularity)")
 ```
 
 ### Research: Batch analysis with effect sizes

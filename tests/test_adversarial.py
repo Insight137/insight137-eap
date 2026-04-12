@@ -436,18 +436,22 @@ class TestMathematicalCorrectness:
         assert abs(d + d_rev) < 1e-10  # antisymmetric
 
     def test_bias_phase_symmetry(self):
-        """bias_phase should be antisymmetric around the center p0=0.5.
-        phase(0.5+d) = -phase(0.5-d)"""
+        """Phase mapping should be antisymmetric around center p0=0.5.
+        arcsin((0.5+d - 0.5)/0.5) = -arcsin((0.5-d - 0.5)/0.5)"""
+        import math
+        p0 = 0.5
         for delta in [0.1, 0.2, 0.3, 0.4, 0.49]:
-            p_high = eap._bias_phase(0.5 + delta)
-            p_low = eap._bias_phase(0.5 - delta)
+            p_high = math.asin(max(-1.0, min(((0.5 + delta) - p0) / p0, 1.0)))
+            p_low = math.asin(max(-1.0, min(((0.5 - delta) - p0) / p0, 1.0)))
             assert abs(p_high + p_low) < 1e-10, (
                 f"Asymmetry at delta={delta}: {p_high} vs {p_low}"
             )
 
     def test_bias_phase_center_is_zero(self):
-        """phase(0.5) should be exactly 0."""
-        assert eap._bias_phase(0.5) == 0.0
+        """Phase at center (p=0.5) should be exactly 0."""
+        import math
+        p0 = 0.5
+        assert math.asin(max(-1.0, min((0.5 - p0) / p0, 1.0))) == 0.0
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -866,3 +870,405 @@ class TestAdditionalAttacks:
         profile = eap.compute_psi_from_sequence([10.0, 20.0, 30.0], window_size=100)
         assert np.isfinite(profile.psi_1)
         assert np.isfinite(profile.psi_2)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# 9. EXTENDED CONCURRENCY SAFETY
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestExtendedConcurrency:
+    """Verify that concurrent calls with shared inputs produce correct,
+    independent results — no mutable shared state between threads."""
+
+    def test_concurrent_shannon_entropy(self):
+        """50 threads computing shannon_entropy on distinct distributions."""
+        rng = np.random.default_rng(42)
+        inputs = []
+        for _ in range(50):
+            p = rng.dirichlet(np.ones(5))
+            inputs.append(p)
+        expected = [eap.shannon_entropy(p) for p in inputs]
+
+        with ThreadPoolExecutor(max_workers=16) as executor:
+            futures = {
+                executor.submit(eap.shannon_entropy, p): i
+                for i, p in enumerate(inputs)
+            }
+            for future in as_completed(futures):
+                idx = futures[future]
+                assert abs(future.result() - expected[idx]) < 1e-12
+
+    def test_concurrent_belief_degree_huang(self):
+        """20 threads computing belief_degree_huang simultaneously."""
+        rng = np.random.default_rng(77)
+        inputs = []
+        for _ in range(20):
+            outcomes = [
+                {"p_given_a_true": float(rng.uniform(0.1, 0.9)),
+                 "p_given_a_false": float(rng.uniform(0.1, 0.9))}
+                for _ in range(3)
+            ]
+            inputs.append(outcomes)
+        expected = [eap.belief_degree_huang(o) for o in inputs]
+
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = {
+                executor.submit(eap.belief_degree_huang, o): i
+                for i, o in enumerate(inputs)
+            }
+            for future in as_completed(futures):
+                idx = futures[future]
+                assert abs(future.result() - expected[idx]) < 1e-12
+
+    def test_concurrent_cohens_d(self):
+        """Threads computing cohens_d on independent groups."""
+        rng = np.random.default_rng(55)
+        pairs = [(rng.normal(0, 1, 50), rng.normal(1, 1, 50)) for _ in range(20)]
+        expected = [eap.cohens_d(a, b) for a, b in pairs]
+
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = {
+                executor.submit(eap.cohens_d, a, b): i
+                for i, (a, b) in enumerate(pairs)
+            }
+            for future in as_completed(futures):
+                idx = futures[future]
+                assert abs(future.result() - expected[idx]) < 1e-12
+
+    def test_concurrent_same_input_same_result(self):
+        """100 threads all computing the same input must all get the same result."""
+        data = [150.0, 200.0, 180.0, 350.0, 120.0, 400.0, 90.0, 250.0]
+        expected = eap.compute_psi_from_sequence(data)
+
+        with ThreadPoolExecutor(max_workers=16) as executor:
+            futures = [executor.submit(eap.compute_psi_from_sequence, data)
+                       for _ in range(100)]
+            for future in as_completed(futures):
+                assert future.result() == expected
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# 10. MEMORY ATTACKS
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestMemoryAttacks:
+    """Verify graceful handling of large inputs and no memory leaks."""
+
+    def test_10_million_element_sequence(self):
+        """10M element array should complete without OOM.
+        Verifies output is finite; not a correctness test."""
+        big = np.ones(10_000_000, dtype=np.float64)
+        big[::2] = 2.0  # alternating to avoid degenerate zero-variance
+        profile = eap.compute_psi_from_sequence(big)
+        assert np.isfinite(profile.psi_1)
+        assert np.isfinite(profile.psi_2)
+        assert np.isfinite(profile.psi_3)
+
+    def test_large_agent_list_psi4(self):
+        """1000 agents for psi4 — should handle gracefully."""
+        agents = [float(i % 2) * 0.98 + 0.01 for i in range(1000)]
+        result = eap.compute_psi4(agents)
+        assert np.isfinite(result)
+        assert result >= 0.0
+
+    def test_rapid_repeated_calls_no_leak(self):
+        """1000 rapid calls to compute_psi_from_sequence.
+        Memory at end should not be dramatically higher than at start."""
+        import tracemalloc
+        tracemalloc.start()
+        snapshot_before = tracemalloc.take_snapshot()
+
+        data = [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0]
+        for _ in range(1000):
+            eap.compute_psi_from_sequence(data)
+
+        snapshot_after = tracemalloc.take_snapshot()
+        tracemalloc.stop()
+
+        # Compare top stats — total should not grow by more than 1MB
+        stats = snapshot_after.compare_to(snapshot_before, "lineno")
+        total_diff = sum(s.size_diff for s in stats if s.size_diff > 0)
+        assert total_diff < 1_000_000, (
+            f"Memory grew by {total_diff} bytes after 1000 calls"
+        )
+
+    def test_rapid_repeated_psi4_calls(self):
+        """1000 rapid calls to compute_psi4 — stress test the lru_cache."""
+        agents = [0.1, 0.5, 0.9, 0.3, 0.7]
+        for _ in range(1000):
+            result = eap.compute_psi4(agents)
+            assert np.isfinite(result)
+
+    def test_deeply_nested_dict_outcomes(self):
+        """Outcomes list with many entries — should not cause stack issues."""
+        outcomes = [
+            {"p_given_a_true": 0.5 + (i % 10) * 0.01,
+             "p_given_a_false": 0.5 - (i % 10) * 0.01}
+            for i in range(500)
+        ]
+        db = eap.belief_degree_huang(outcomes)
+        assert np.isfinite(db)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# 11. TYPE COERCION TRAPS
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestTypeCoercionTraps:
+    """Verify correct handling of numpy scalar types, booleans, and
+    other types that might bypass isinstance checks."""
+
+    def test_numpy_int_in_sequence(self):
+        """numpy integer arrays should be accepted and cast to float64."""
+        arr = np.array([10, 20, 30, 40, 50], dtype=np.int32)
+        profile = eap.compute_psi_from_sequence(arr)
+        assert np.isfinite(profile.psi_1)
+
+    def test_numpy_int64_in_sequence(self):
+        """numpy int64 should work the same as Python int."""
+        arr = np.array([100, 200, 300], dtype=np.int64)
+        profile = eap.compute_psi_from_sequence(arr)
+        assert np.isfinite(profile.psi_1)
+
+    def test_numpy_float32_in_sequence(self):
+        """float32 array should be upcast to float64 without error."""
+        arr = np.array([1.5, 2.5, 3.5, 4.5], dtype=np.float32)
+        profile = eap.compute_psi_from_sequence(arr)
+        assert np.isfinite(profile.psi_1)
+
+    def test_numpy_float32_precision(self):
+        """float32 and float64 should give the same result after upcast."""
+        data = [10.0, 20.0, 30.0, 40.0, 50.0]
+        f32 = np.array(data, dtype=np.float32)
+        f64 = np.array(data, dtype=np.float64)
+        p32 = eap.compute_psi_from_sequence(f32)
+        p64 = eap.compute_psi_from_sequence(f64)
+        # After upcast to float64 they should agree closely
+        assert abs(p32.psi_1 - p64.psi_1) < 1e-5
+
+    def test_boolean_in_sequence(self):
+        """Boolean array [True, False, True] should work as [1.0, 0.0, 1.0]."""
+        bools = [True, False, True, True, False]
+        profile = eap.compute_psi_from_sequence(bools)
+        ints = [1.0, 0.0, 1.0, 1.0, 0.0]
+        profile_int = eap.compute_psi_from_sequence(ints)
+        assert abs(profile.psi_1 - profile_int.psi_1) < 1e-10
+
+    def test_boolean_as_probability(self):
+        """True/False should be accepted as probability values (1.0/0.0)."""
+        # True is valid as 1.0, False as 0.0
+        result = eap._validate_probability(True, "test")
+        assert result == 1.0
+        result = eap._validate_probability(False, "test")
+        assert result == 0.0
+
+    def test_numpy_scalar_as_probability(self):
+        """numpy scalar types (np.float64, np.int32) in probability validation."""
+        val = np.float64(0.5)
+        result = eap._validate_probability(val, "test")
+        assert abs(result - 0.5) < 1e-15
+
+    def test_numpy_int_scalar_as_probability(self):
+        """np.int32(1) should be accepted as a valid probability."""
+        val = np.int32(1)
+        result = eap._validate_probability(val, "test")
+        assert result == 1.0
+
+    def test_complex_number_rejected_in_sequence(self):
+        """Complex numbers should be rejected by _validate_sequence."""
+        with pytest.raises((TypeError, ValueError)):
+            eap._validate_sequence([1+2j, 3+4j], "test")
+
+    def test_complex_in_psi4_rejected(self):
+        """Complex numbers in agent_probabilities should be rejected."""
+        with pytest.raises((TypeError, ValueError)):
+            eap.compute_psi4([0.5+0j, 0.3+0j])
+
+    def test_numpy_bool_array_in_psi4(self):
+        """Boolean agent probabilities should work as 0.0/1.0."""
+        # Note: True=1.0 and False=0.0, but psi4 needs >= 2 agents
+        # True -> 1.0, False -> 0.0 (clamped to PROB_FLOOR)
+        result = eap.compute_psi4([True, False, True])
+        assert np.isfinite(result)
+        assert result >= 0.0
+
+    def test_mixed_int_float_in_psi4(self):
+        """Mix of Python int and float should work."""
+        result = eap.compute_psi4([1, 0.5, 0, 0.99])
+        assert np.isfinite(result)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# 12. MATHEMATICAL CORNER CASES
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestMathematicalCornerCases:
+    """Edge cases that probe numerical limits and mathematical properties."""
+
+    def test_probability_sum_barely_below_one(self):
+        """Priors summing to 0.99999999 should be accepted (within 0.01 tolerance)."""
+        conds = {
+            "A": {"p_given_a_true": 0.7, "p_given_a_false": 0.3},
+            "B": {"p_given_a_true": 0.3, "p_given_a_false": 0.7},
+        }
+        # 0.49999999 + 0.50000001 = 1.0 — within tolerance
+        q = eap.quantum_probability(
+            conds, p_a_true=0.49999999, p_a_false=0.50000001
+        )
+        assert abs(sum(q.values()) - 1.0) < 1e-10
+
+    def test_probability_sum_barely_above_one(self):
+        """Priors summing to 1.00000001 should be accepted (within 0.01 tolerance)."""
+        conds = {
+            "A": {"p_given_a_true": 0.6, "p_given_a_false": 0.4},
+            "B": {"p_given_a_true": 0.4, "p_given_a_false": 0.6},
+        }
+        q = eap.quantum_probability(
+            conds, p_a_true=0.500000005, p_a_false=0.500000005
+        )
+        assert abs(sum(q.values()) - 1.0) < 1e-10
+
+    def test_probability_sum_outside_tolerance_rejected(self):
+        """Priors summing to 0.90 should be rejected (outside 0.01 tolerance)."""
+        conds = {"A": {"p_given_a_true": 0.5, "p_given_a_false": 0.5}}
+        with pytest.raises(ValueError, match="sum to"):
+            eap.quantum_probability(conds, p_a_true=0.45, p_a_false=0.45)
+
+    def test_single_observation_sequence(self):
+        """Length-1 sequence: should produce valid psi_1, zero for psi_2/3/4."""
+        profile = eap.compute_psi_from_sequence([42.0])
+        assert profile.psi_1 == 0.0  # single element -> zero Shannon entropy
+        assert profile.psi_2 == 0.0
+        assert profile.psi_3 == 0.0
+        assert profile.psi_4 == 0.0
+
+    def test_two_observation_sequence(self):
+        """Length-2 sequence: psi_1 valid, psi_3 zero (needs >= 3 for std)."""
+        profile = eap.compute_psi_from_sequence([10.0, 90.0])
+        assert profile.psi_1 > 0.0  # two different values -> positive entropy
+        assert np.isfinite(profile.psi_2)
+        assert profile.psi_3 == 0.0  # std of 1 interference value is 0
+
+    def test_all_identical_zero_variance(self):
+        """All-identical sequence: psi_1 = log2(n), psi_2/3 depend on window."""
+        profile = eap.compute_psi_from_sequence([5.0, 5.0, 5.0, 5.0, 5.0])
+        # All equal -> uniform distribution -> Shannon entropy = log2(5)
+        assert abs(profile.psi_1 - math.log2(5)) < 1e-4
+        assert np.isfinite(profile.psi_2)
+        assert np.isfinite(profile.psi_3)
+
+    def test_alternating_binary_max_entropy(self):
+        """Alternating [1, 0, 1, 0, ...]: psi_1 is Shannon entropy of the
+        normalized distribution. 50 zeros are filtered out (< EPSILON),
+        leaving 50 equal values -> entropy = log2(50)."""
+        seq = [1.0, 0.0] * 50  # 100 elements alternating
+        profile = eap.compute_psi_from_sequence(seq)
+        assert abs(profile.psi_1 - math.log2(50)) < 1e-4
+
+    def test_shannon_entropy_uniform_distribution(self):
+        """Uniform distribution over n outcomes: entropy = log2(n)."""
+        for n in [2, 4, 8, 16]:
+            probs = np.ones(n) / n
+            h = eap.shannon_entropy(probs)
+            assert abs(h - math.log2(n)) < 1e-10
+
+    def test_deng_entropy_very_large_mass_count(self):
+        """100 singleton masses: should still compute correctly."""
+        masses = [(1, 0.01) for _ in range(100)]
+        result = eap.deng_entropy(masses)
+        expected = eap.shannon_entropy(np.array([0.01] * 100))
+        assert abs(result - expected) < 1e-10
+
+    def test_cohens_d_large_effect(self):
+        """Two well-separated groups with variance should give |d| >> 1."""
+        rng = np.random.default_rng(42)
+        a = rng.normal(0.0, 1.0, 100)
+        b = rng.normal(10.0, 1.0, 100)
+        d = eap.cohens_d(a, b)
+        assert d < -5.0  # b is much higher, so d is very negative
+
+    def test_cohens_d_zero_effect(self):
+        """Identical groups should give d = 0.0."""
+        a = np.ones(100) * 5.0
+        b = np.ones(100) * 5.0
+        d = eap.cohens_d(a, b)
+        assert d == 0.0
+
+    def test_psi4_all_bypass_consensus(self):
+        """All agents bypass (p=1.0): high consensus, low psi4."""
+        result = eap.compute_psi4([1.0, 1.0, 1.0, 1.0, 1.0])
+        assert result < 0.01  # near-zero disagreement
+
+    def test_psi4_maximum_disagreement(self):
+        """Half bypass, half comply: maximum disagreement."""
+        result_split = eap.compute_psi4([1.0, 1.0, 0.01, 0.01])
+        result_agree = eap.compute_psi4([1.0, 1.0, 1.0, 1.0])
+        assert result_split > result_agree
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# 13. UNICODE AND ENCODING ATTACKS
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestUnicodeAndEncoding:
+    """Verify that string/bytes inputs are rejected cleanly, not coerced."""
+
+    def test_unicode_string_in_sequence(self):
+        """Unicode string list should raise, not silently coerce."""
+        with pytest.raises((ValueError, TypeError)):
+            eap.compute_psi_from_sequence(["hello", "world", "test"])
+
+    def test_unicode_string_in_psi4(self):
+        """Unicode strings in agent_probabilities must raise TypeError."""
+        with pytest.raises(TypeError):
+            eap.compute_psi4(["0.5", "0.3"])
+
+    def test_bytes_in_sequence(self):
+        """Byte strings should raise, not silently coerce."""
+        with pytest.raises((ValueError, TypeError)):
+            eap.compute_psi_from_sequence([b"hello", b"world"])
+
+    def test_bytes_as_probability(self):
+        """Byte string should raise TypeError in probability validation."""
+        with pytest.raises(TypeError):
+            eap._validate_probability(b"\x00", "test")
+
+    def test_unicode_numeric_string_in_psi4(self):
+        """Numeric-looking unicode strings should still raise TypeError."""
+        with pytest.raises(TypeError):
+            eap.compute_psi4(["0.5", "0.3", "0.7"])
+
+    def test_empty_string_in_sequence(self):
+        """Empty string in sequence should raise."""
+        with pytest.raises((ValueError, TypeError)):
+            eap.compute_psi_from_sequence(["", "", ""])
+
+    def test_unicode_dict_keys_in_conditionals(self):
+        """Unicode dict keys are valid — outcome names are arbitrary strings."""
+        conds = {
+            "\u03c8\u2081": {"p_given_a_true": 0.7, "p_given_a_false": 0.3},
+            "\u03c8\u2082": {"p_given_a_true": 0.3, "p_given_a_false": 0.7},
+        }
+        q = eap.quantum_probability(conds)
+        assert abs(sum(q.values()) - 1.0) < 1e-10
+        assert "\u03c8\u2081" in q
+        assert "\u03c8\u2082" in q
+
+    def test_emoji_dict_keys(self):
+        """Emoji outcome names should work fine — they're just strings."""
+        conds = {
+            "\U0001f600": {"p_given_a_true": 0.8, "p_given_a_false": 0.2},
+            "\U0001f641": {"p_given_a_true": 0.2, "p_given_a_false": 0.8},
+        }
+        q = eap.quantum_probability(conds)
+        assert abs(sum(q.values()) - 1.0) < 1e-10
+
+    def test_none_in_sequence(self):
+        """None values in a sequence should raise."""
+        with pytest.raises((ValueError, TypeError)):
+            eap.compute_psi_from_sequence([1.0, None, 3.0])
+
+    def test_none_as_outcomes_list(self):
+        """None instead of outcomes list should raise."""
+        with pytest.raises((TypeError, ValueError)):
+            eap.belief_degree_huang(None)

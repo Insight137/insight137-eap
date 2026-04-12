@@ -1,4 +1,0 @@
-# file: C:\Code-Workspace\insight137-eap\insight137_eap.py
-# hypothesis_version: 6.151.12
-
-[-1.0, -0.942, 0.0, 1e-15, 1e-10, 0.005, 0.01, 0.13, 0.255, 0.26, 0.3, 0.3606, 0.5, 0.6926, 0.7, 0.74, 0.87, 0.99, 1.0, 2.0, 120, 150, 180, 200, 250, 350, 400, '-', '2.0.0', '=', 'CC BY-NC-ND 4.0', 'FAIL', 'PASS', 'PsiMethod', 'PsiProfile', 'Roger Yau', 'VerificationError', '__main__', 'amplitude_alpha', 'amplitude_beta', 'belief_degree', 'belief_degree_huang', 'belief_degree_match', 'classical', 'cohens_d', 'compute_psi3', 'compute_psi4', 'cooperate', 'defect', 'deng_entropy', 'deng_exceeds_shannon', 'group_a', 'group_b', 'huang_2019', 'insight137.eap', 'method', 'p_a_false', 'p_a_true', 'p_given_a_false', 'p_given_a_true', 'probability_match', 'psi_1', 'psi_2', 'psi_3', 'psi_4', 'psi_profile_valid', 'quantum_probability', 'shannon_entropy', 'values', 'verify_huang_paper']
