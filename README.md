@@ -209,6 +209,62 @@ quantum_probability(data, priors=[0.5, 0.5])
 
 ---
 
+## Visualization & Export
+
+### Plot a Psi profile
+
+```python
+import insight137_eap as eap
+
+profile = eap.compute_psi_from_sequence([150, 200, 180, 350, 120, 400, 90, 250])
+eap.plot(profile, save_path="my_chart.png")
+```
+
+### Compare two profiles visually
+
+```python
+eap.plot_compare(
+    eap.examples.human_keystrokes,
+    eap.examples.bot_keystrokes,
+    labels=("Human", "Bot"),
+    save_path="comparison.png",
+)
+```
+
+Also available: `eap.plot_dimensions(a, b)` for grouped bar charts (better for publications).
+
+### Export for MATLAB
+
+```python
+eap.to_matlab(profiles, "results.mat")
+```
+
+Then in MATLAB: `data = load('results.mat');`
+
+See `examples/matlab_example.m` for a complete MATLAB radar chart script.
+
+### Export for R
+
+```python
+eap.to_csv(profiles, "results.csv")
+```
+
+Then in R: `data <- read.csv('results.csv')`
+
+See `examples/r_example.R` for a complete R radar chart script.
+
+### Export to JSON
+
+```python
+json_str = eap.to_json(profiles, labels=["human", "bot"])
+# Or write directly to file:
+eap.to_json(profiles, path="results.json")
+```
+
+**Note:** matplotlib and scipy are optional. Core library needs only numpy.
+
+---
+
 ## Use Cases
 
 ### AI Safety: Monitor agents for behavioral transitions
