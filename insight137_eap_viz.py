@@ -139,7 +139,21 @@ def _extract_psi(profile) -> np.ndarray:
     if hasattr(profile, "psi_1"):
         return np.array([profile.psi_1, profile.psi_2, profile.psi_3, profile.psi_4])
     if isinstance(profile, dict):
-        return np.array([profile[k] for k in PSI_KEYS])
+        missing = [k for k in PSI_KEYS if k not in profile]
+        if missing:
+            raise TypeError(
+                f"Dict missing required keys: {missing}. "
+                "Need all of: psi_1, psi_2, psi_3, psi_4."
+            )
+        vals = []
+        for k in PSI_KEYS:
+            v = profile[k]
+            if not isinstance(v, (int, float, np.integer, np.floating)):
+                raise TypeError(
+                    f"Dict value for '{k}' must be numeric, got {type(v).__name__}: {v!r}"
+                )
+            vals.append(float(v))
+        return np.array(vals)
     if isinstance(profile, (list, tuple, np.ndarray)):
         arr = np.asarray(profile, dtype=float)
         if arr.shape == (4,):
@@ -1512,6 +1526,8 @@ def export_csv(
     """
     if not isinstance(profiles, list):
         profiles = [profiles]
+    if len(profiles) == 0:
+        raise ValueError("Cannot export empty profile list. Provide at least one profile.")
 
     if labels is None:
         labels = [f"Profile_{i+1}" for i in range(len(profiles))]
@@ -1568,6 +1584,8 @@ def export_json(
     """
     if not isinstance(profiles, list):
         profiles = [profiles]
+    if len(profiles) == 0:
+        raise ValueError("Cannot export empty profile list. Provide at least one profile.")
 
     if labels is None:
         labels = [f"Profile_{i+1}" for i in range(len(profiles))]
