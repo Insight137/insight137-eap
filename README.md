@@ -2,23 +2,31 @@
 
 **Version 2.0.0** | Enterprise-grade 4-dimensional entropy profiling
 
-Formally grounded in peer-reviewed research. Validated across 128,675 samples.
+Formally grounded in peer-reviewed research. Validated across 75,600+ samples.
 
 ---
 
 ## Installation
 
-No pip package yet. Copy `insight137_eap.py` to your project and import:
+```bash
+# Core library (NumPy only)
+pip install git+https://github.com/Insight137/insight137-eap.git
 
-```python
-from insight137_eap import (
-    compute_psi_from_sequence,
-    compute_psi_from_conditionals,
-    PsiProfile,
-)
+# With interactive visualizations (Plotly)
+pip install "insight137-eap[viz] @ git+https://github.com/Insight137/insight137-eap.git"
+
+# With everything (Plotly + Matplotlib + MATLAB export)
+pip install "insight137-eap[all] @ git+https://github.com/Insight137/insight137-eap.git"
 ```
 
-**Requires:** Python 3.9+, NumPy
+Or clone and import directly:
+
+```python
+from insight137_eap import compute_psi_from_sequence, PsiProfile
+from insight137_eap_viz import psi_radar, psi_3d, export_matlab  # visualization
+```
+
+**Requires:** Python 3.9+, NumPy. Visualization deps are optional.
 
 ---
 
@@ -209,59 +217,107 @@ quantum_probability(data, priors=[0.5, 0.5])
 
 ---
 
-## Visualization & Export
+## Visualization Module
 
-### Plot a Psi profile
+`insight137_eap_viz.py` — 1,999 lines, 14 functions, 21/21 tests passed.
 
-```python
-import insight137_eap as eap
+Seven chart types, dual rendering engine (Plotly interactive + Matplotlib publication), cross-platform export (MATLAB, R, JSON). Three color palettes.
 
-profile = eap.compute_psi_from_sequence([150, 200, 180, 350, 120, 400, 90, 250])
-eap.plot(profile, save_path="my_chart.png")
+### Quick demo — generate all 7 charts in one command
+
+```bash
+python demo_eap_viz.py
+# Creates eap_demo_output/ with 12 files: 7 HTML charts + .mat + .csv + .json + .m + .R
 ```
 
-### Compare two profiles visually
+### Radar chart
 
 ```python
-eap.plot_compare(
-    eap.examples.human_keystrokes,
-    eap.examples.bot_keystrokes,
-    labels=("Human", "Bot"),
-    save_path="comparison.png",
-)
+from insight137_eap import compute_psi_from_sequence
+from insight137_eap_viz import psi_radar
+
+profiles = [
+    compute_psi_from_sequence([150, 200, 180, 350]),
+    compute_psi_from_sequence([50, 51, 50, 49]),
+]
+psi_radar(profiles, labels=["Human", "Bot"])
+psi_radar(profiles, labels=["Human", "Bot"], save="radar.png", engine="matplotlib")
 ```
 
-Also available: `eap.plot_dimensions(a, b)` for grouped bar charts (better for publications).
-
-### Export for MATLAB
+### 3D entropy landscape
 
 ```python
-eap.to_matlab(profiles, "results.mat")
+from insight137_eap_viz import psi_3d
+
+psi_3d(profiles, labels=["Human", "Bot"], show_mesh=True)  # Ψ₁/Ψ₂/Ψ₃ axes, Ψ₄ color
+psi_3d(profiles, axes=(1,2,3), color_dim=0)  # custom axis mapping
 ```
 
-Then in MATLAB: `data = load('results.mat');`
-
-See `examples/matlab_example.m` for a complete MATLAB radar chart script.
-
-### Export for R
+### Quantum interference surface
 
 ```python
-eap.to_csv(profiles, "results.csv")
+from insight137_eap_viz import interference_surface
+
+interference_surface(p_b_given_a=0.87, p_b_given_not_a=0.74)  # Prisoner's Dilemma
+interference_surface(0.72, 0.58, save="fig2.pdf", palette="publication")
 ```
 
-Then in R: `data <- read.csv('results.csv')`
-
-See `examples/r_example.R` for a complete R radar chart script.
-
-### Export to JSON
+### Chishu (持樞) trajectory
 
 ```python
-json_str = eap.to_json(profiles, labels=["human", "bot"])
-# Or write directly to file:
-eap.to_json(profiles, path="results.json")
+from insight137_eap_viz import psi_trajectory
+
+# profiles_over_time = list of PsiProfiles from sequential conversation turns
+psi_trajectory(profiles_over_time, phase_boundaries=[0, 5, 12, 18])
+# Colors: 生 teal → 長 blue → 收 amber → 藏 red
 ```
 
-**Note:** matplotlib and scipy are optional. Core library needs only numpy.
+### Heatmap, time series, parameter sweep
+
+```python
+from insight137_eap_viz import psi_heatmap, psi_timeseries, psi_parameter_sweep
+
+psi_heatmap(profiles, labels=model_names)           # matrix comparison
+psi_timeseries(profiles_over_time, phase_boundaries=[0, 5, 12, 18])  # 2D temporal
+psi_parameter_sweep(model_fn, (0,1), (0,1), psi_dim=2)  # response surface
+```
+
+### Export to MATLAB, R, JSON
+
+```python
+from insight137_eap_viz import export_matlab, export_csv, export_json
+from insight137_eap_viz import generate_matlab_script, generate_r_script
+
+export_matlab(profiles, "results.mat")         # MATLAB: load('results.mat')
+export_csv(profiles, "results.csv")            # R: read.csv('results.csv')
+export_json(profiles, "results.json")          # Any: JSON.parse / jsondecode
+
+generate_matlab_script("results.mat", "viz.m") # Ready-to-run MATLAB script
+generate_r_script("results.csv", "viz.R")      # Ready-to-run R/ggplot2 script
+```
+
+### Full report (all charts + all exports)
+
+```python
+from insight137_eap_viz import full_report
+
+files = full_report(profiles, labels=model_names, output_dir="eap_report")
+# Creates: radar.html, scatter_3d.html, heatmap.html, .mat, .csv, .json, .m, .R
+```
+
+### Color palettes
+
+```python
+from insight137_eap_viz import get_palette
+
+get_palette("insight137")   # dark theme (teal/blue/purple/red)
+get_palette("publication")  # white background, journal-ready
+get_palette("matlab")       # matches MATLAB defaults
+```
+
+All functions accept `engine="plotly"` (interactive, default) or `engine="matplotlib"` (static/publication). All accept `save="path.html"` / `.png` / `.svg` / `.pdf`.
+
+**Optional dependencies:** `pip install plotly kaleido` for interactive, `pip install matplotlib` for static, `pip install scipy` for MATLAB .mat export.
 
 ---
 
