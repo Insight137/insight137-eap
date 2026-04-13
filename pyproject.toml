@@ -30,6 +30,12 @@ dependencies = [
     "numpy>=1.21.0",
 ]
 
+[project.optional-dependencies]
+viz = ["plotly>=5.0", "kaleido>=0.2"]
+matplotlib = ["matplotlib>=3.5"]
+matlab = ["scipy>=1.7"]
+all = ["plotly>=5.0", "kaleido>=0.2", "matplotlib>=3.5", "scipy>=1.7"]
+
 [project.urls]
 Homepage = "https://insight137.com"
 Research = "https://insight137.com/research"
@@ -37,4 +43,4 @@ Repository = "https://github.com/Insight137/insight137-eap"
 Issues = "https://github.com/Insight137/insight137-eap/issues"
 
 [tool.setuptools]
-py-modules = ["insight137_eap"]
+py-modules = ["insight137_eap", "insight137_eap_viz"]
