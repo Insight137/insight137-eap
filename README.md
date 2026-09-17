@@ -2,7 +2,7 @@
 
 **Version 2.0.0** | Enterprise-grade 4-dimensional entropy profiling
 
-Formally grounded in peer-reviewed research. Validated across 75,600+ samples.
+Formally grounded in peer-reviewed research. Tested on four datasets (82,932 samples): QOdata72 (72 studies, 53,078 participants), Palisade shutdown-avoidance (2,200 transcripts), SHADE-Arena (7,254 transcripts), and CMU keystroke dynamics (20,400 samples).
 
 ---
 
@@ -615,7 +615,7 @@ The mathematical foundations are not ours. We integrate and validate:
 - **Busemeyer & Bruza (2012)** — *Quantum Models of Cognition and Decision*. Cambridge University Press.
 - **Shannon (1948)** — A mathematical theory of communication. *Bell System Technical Journal*, 27(3).
 
-Our contributions: integration architecture, Psi3 temporal volatility, chishu temporal model, cross-domain validation (128,675 samples), behavioral archetype taxonomy, production implementation.
+Our contributions: integration architecture, Psi3 temporal volatility, chishu temporal model, cross-domain validation on four datasets (82,932 samples), behavioral archetype taxonomy, production implementation.
 
 ---
 

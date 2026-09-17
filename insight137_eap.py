@@ -10,7 +10,7 @@ Integrates formally grounded methods from peer-reviewed research:
   - Meghdadi, Akbarzadeh-T, Javidan (2022): BEQBN entanglement
   - Busemeyer & Bruza (2012): Quantum cognition foundations
 
-Validated across 128,675 samples in 4 domains.
+Tested on four datasets (82,932 samples) in 4 domains.
 Paper verification: Db=-0.9421 matches published -0.9420.
 
 Copyright (c) 2026 Insight137 (insight137.com)
