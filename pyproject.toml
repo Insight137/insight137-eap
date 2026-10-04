@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "insight137-eap"
-version = "2.0.0"
+version = "2.1.0.dev0"
 description = "Entropy Attunement Protocol - 4D entropy profiling for behavioral prediction and AI safety"
 readme = "README.md"
 license = {text = "CC-BY-NC-ND-4.0"}

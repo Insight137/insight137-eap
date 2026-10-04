@@ -16,10 +16,10 @@ Paper verification: Db=-0.9421 matches published -0.9420.
 Copyright (c) 2026 Insight137 (insight137.com)
 License: CC BY-NC-ND 4.0
 
-Version: 2.0.0
+Version: 2.1.0.dev0 (unreleased; last release is 2.0.0)
 """
 
-__version__ = "2.0.0"
+__version__ = "2.1.0.dev0"
 __author__ = "Roger Yau"
 __license__ = "CC BY-NC-ND 4.0"
 
