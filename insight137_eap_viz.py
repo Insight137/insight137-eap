@@ -1,7 +1,7 @@
 """
 Insight137 EAP Visualization Module
 ====================================
-Version: 2.0.0
+Version: 2.1.0.dev0 (unreleased; last release is 2.0.0)
 License: CC BY-NC-ND 4.0
 DOI: 10.17605/OSF.IO/H96QD
 
@@ -1987,7 +1987,7 @@ def full_report(
 # MODULE INFO
 # ═════════════════════════════════════════════════════════════════════
 
-__version__ = "2.0.0"
+__version__ = "2.1.0.dev0"
 __author__ = "Roger Yau (Jus) — Insight137"
 __license__ = "CC BY-NC-ND 4.0"
 
