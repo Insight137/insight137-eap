@@ -394,7 +394,7 @@ print(f"Classical: {p_classical:.4f}")
 print(f"Quantum:   {q_probs['option_1']:.4f}")
 ```
 
-Validated: 49% average error improvement over classical on Prisoner's Dilemma data (Huang et al., 2019).
+Reproduces Huang et al. (2019) published values on their Prisoner's Dilemma data (the method's development set; see `verify_huang_paper()`). Whether the routine out-predicts the classical law of total probability on studies it has never seen is under pre-registered test — see `validation/two_stage_head_to_head/`. No out-of-sample accuracy claim is made until that result is published.
 
 ### Behavioral UX: Detect mode switches in user sessions
 
